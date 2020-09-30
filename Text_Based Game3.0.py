@@ -153,39 +153,28 @@ def createRooms():
 def roomEdit():
     if currentRoom == r1:
         if "key" in inventory:
-            i = r1.itemDescriptions.index("It is made of oak. A golden key \
-                                          rests on it.")
-            r1.itemDescriptions [i] = ("It is made of oak. Nothing is on it")
+            r1.items["table"] = ("It is made of oak. Nothing is on it")
             
     if currentRoom == r2:
         if "gun" in inventory:
-            i = r2.itemDescriptions.index("There's just a dirty, old coat \
-                                          with a gun in the pocket")
-            r2.itemDescriptions [i] = ("There's just a dirty, old coat")
-    
+            r2.items["closet"] = ("There's just a dirty, old coat")
+  
     if currentRoom == r3:
         if "book" in inventory:
-            i = r3.itemDescriptions.index("The statue is resting on it. So is \
-                                          a book.")
-            r3.itemDescriptions [i] = ("The statue is resting on it")
+            r3.items["desk"] = ("The statue is resting on it")
             
     if currentRoom == r4:
         if "6-pack" in inventory:
-            i = r4.itemDescriptions.index( "Gourd is brewing some sort of \
-                                          oatmeal stout on the brew rig. A \
-                                              6-pack is resting beside it.")
-            r4.itemDescriptions [i] = ("Gourd is brewing some sort of oatmeal\
-                                        stout on the brew rig. Did you really \
-                                            take his beer?")
+            r4.items["brew_rig"] = ("Gourd is brewing some sort of oatmeal \
+                                    stout on the brew rig. Did you really \
+                                        take his beer?")
 
     if currentRoom == r5:
         if dragonDead == True:
-            i = r5.itemDescriptions.index("Does it matter what it looks \
-                                          like?! Kill it!")
-            r5.itemDescriptions [i] = ("Yup, that's a dead dragon, alright")
             #changes the name of the dragon once killed
-            r5.items [i] = "dead_dragon"
-            #reveals a previously hidden item
+            del r5.items["dragon"]
+            r5.addItem("dead_dragon", "Yup, that's a dead dragon, alright")
+            #reveals the previously hidden chest
             r5.addItem("chest", "It is very large and appears to be locked")
            
 #setting starting game variables 
@@ -355,18 +344,17 @@ while (True):
             if (noun in currentRoom.exits):
                 currentRoom = currentRoom.exits[noun]
                 response = "Room changed."
-                if currentRoom == r5 and dragonDead == False: ##### Prints the dragon #####
+                #starts the dragon attack
+                if currentRoom == r5 and dragonDead == False:
                     response = "A dragon is atatcking you! Shoot him!"
                     dragon()
-                break
                 
         elif (verb == "look"):
             response = "I don't see that item."
             if (noun in currentRoom.items):
                 response = currentRoom.items[noun]
-                break
-                
-        elif (verb == "take" or verb == "grab"): ##### I added "grab" as a verb because that is what I naturally kept typing #####
+                              
+        elif (verb == "take" or verb == "grab"):
             response = "I don't see that item."
             for grabbable in currentRoom.grabbables:
                 if (noun == grabbable):
@@ -375,18 +363,20 @@ while (True):
                     response = "Item grabbed."
                     #runs the function that changes the item descsriptions
                     roomEdit()
-                    break
                 
-        elif (verb == "open" or verb == "unlock"): ##### Opens the chest behind the dragon #####
+        #opens the chest behind the dragon after it is revealed
+        elif (verb == "open" or verb == "unlock"):
             response = "I can't open that."
             if (currentRoom == r5) and (noun == "chest"):
                 if ("key" in inventory):
                     inventory.append("infinite_wealth")
-                    chest() ##### Prints the chest #####
+                    #prints the chest
+                    chest()
                     response = "So... much... GOLD!!! \n You're rich!!!"
                     game = "over"
-                    
-        elif (verb == "place"): ##### A secret room is revealed when the book is placed on the bookshelf #####
+        
+        #reveals secret room once book is placed on bookshelf
+        elif (verb == "place"):
             response = "Place it where? The ground?!"
             if (currentRoom == r3) and (noun == "book") and ("book" in inventory):
                 inventory.remove("book")
@@ -394,8 +384,9 @@ while (True):
                 r3.addExit("west", r6)
             if noun != "book":
                 response = "You should keep that for now."
-        
-    elif (len(words) == 1): ##### This is so the player only has to type "shoot" and not "shoot gun". #####
+    
+    #allows the player to shoot the dragon with input "shoot"
+    elif (len(words) == 1):
         verb = words[0]
         
         if (verb == "shoot"):
@@ -403,7 +394,9 @@ while (True):
             if "gun" in inventory:
                 response = "You put a hole in the wall. Why would you do that?"
             if currentRoom == r5 and "gun" in inventory:
+                #deploys shoot function
                 response = shoot()
+            #reveals the chest once the dragon is dead
             if dragonDead == True:
                 roomEdit()
                            
