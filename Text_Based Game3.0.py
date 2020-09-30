@@ -1,5 +1,5 @@
 ######################################################################
-# Name:Mary deMarigny
+# Name:Mary deMarigny & Chloe Boudreaux
 # Date:09/29/2020
 # Description: Text Based Game_Updated: Python 3.8
 ######################################################################
