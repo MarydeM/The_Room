@@ -1,7 +1,7 @@
 ######################################################################
 # Name:Mary deMarigny
-# Date:07/20/2020
-# Description: Text Based Game: Python 3.8
+# Date:09/29/2020
+# Description: Text Based Game_Updated: Python 3.8
 ######################################################################
 ######################################################################
 
@@ -23,10 +23,8 @@ class Room(object):
     
     def __init__(self, name): #the constructor 
         self.name = name
-        self.exits = [] #Lists that are connected somehow are called "parallel lists"
-        self.exitLocations = [] #The correlating indecies are connected in parallel lists.
-        self.items = [] #Parallel Lists v
-        self.itemDescriptions = [] #    ^
+        self.exits = {} #Exit Dictionary
+        self.items = {} #Exit Dictionary
         self.grabbables = []
         
         
@@ -47,28 +45,12 @@ class Room(object):
         self._exits = value           # |
                                       # |
     @property                         # |
-    def exitLocations(self):          # |
-        return self._exitLocations    # |
-                                      # |
-    @exitLocations.setter             # |
-    def exitLocations(self, value):   # |
-        self._exitLocations = value   # |
-                                      # |
-    @property                         # |
     def items(self):                  # |
         return self._items            # |
                                       # |
     @items.setter                     # |
     def items(self, value):           # |
         self._items = value           # |
-                                      # |
-    @property                         # |
-    def itemDescriptions(self):       # |
-        return self._itemDescriptions # |
-                                      # |
-    @itemDescriptions.setter          # |
-    def itemDescriptions(self, value):# |
-        self._itemDescriptions = value# |
                                       # |
     @property                         # |
     def grabbables(self):             # |
@@ -80,13 +62,11 @@ class Room(object):
         
 #-------------------------------------------------------------------
         
-    def addExit(self, exit, room): #Formal Parameters
-        self._exits.append(exit)
-        self._exitLocations.append(room)
+    def addExit(self, exit, room):
+        self._exits[exit] = room
 
     def addItem(self, item, desc):
-        self._items.append(item)
-        self._itemDescriptions.append(desc)
+        self._items[item] = desc
         
     def addGrabbable(self, item):
         self._grabbables.append(item)
@@ -97,11 +77,11 @@ class Room(object):
     def __str__(self):
         s = "You are in {}.\n".format(self.name)
         s += "You see: "
-        for item in self.items:
+        for item in self.items.keys():
             s += item + " "
         s += "\n"
         s += "Exits: "
-        for exit in self.exits:
+        for exit in self.exits.keys():
             s += exit + " "
         return s
     
@@ -340,21 +320,19 @@ while (True):
         
         if (verb == "go"):
             response = "Invalid exit."
-            for i in range(len(currentRoom.exits)):
-                if (noun == currentRoom.exits[i]):
-                    currentRoom = currentRoom.exitLocations[i]
-                    response = "Room changed."
-                    if currentRoom == r5 and dragonDead == False: ##### Prints the dragon #####
-                        response = "A dragon is atatcking you! Shoot him!"
-                        dragon()
-                    break
+            if (noun in currentRoom.exits):
+                currentRoom = currentRoom.exits[noun]
+                response = "Room changed."
+                if currentRoom == r5 and dragonDead == False: ##### Prints the dragon #####
+                    response = "A dragon is atatcking you! Shoot him!"
+                    dragon()
+                break
                 
         elif (verb == "look"):
             response = "I don't see that item."
-            for i in range(len(currentRoom.items)):
-                if (noun == currentRoom.items[i]):
-                    response = currentRoom.itemDescriptions[i]
-                    break
+            if (noun in currentRoom.items):
+                response = currentRoom.items[noun]
+                break
                 
         elif (verb == "take" or verb == "grab"): ##### I added "grab" as a verb because that is what I naturally kept typing #####
             response = "I don't see that item."
