@@ -117,8 +117,8 @@ def createRooms():
     r2.addExit("west", r1)
     r2.addExit("south", r4)
     r2.addGrabbable("gun")
-    r2.addItem("closet", "There's just a dirty, old coat with a gun in \
-               the pocket") 
+    r2.addItem("closet", "There's just a dirty, old coat with a gun in " \
+               "the pocket") 
     r2.addItem("rug", "It is nice and Indian. It also needs to be vacuumed.")
     r2.addItem("fireplace", "It is full of ashes.")
 
@@ -135,8 +135,8 @@ def createRooms():
     r4.addExit("west", r3)
     r4.addExit("south", r5) 
     r4.addGrabbable("6-pack")
-    r4.addItem("brew_rig", "Gourd is brewing some sort of oatmeal stout on \
-               the brew rig. A 6-pack is resting beside it.")
+    r4.addItem("brew_rig", "Gourd is brewing some sort of oatmeal stout on " \
+               "the brew rig. A 6-pack is resting beside it.")
 
     #room 5
     r5.addExit("north", r4)
@@ -165,14 +165,14 @@ def roomEdit():
             
     if currentRoom == r4:
         if "6-pack" in inventory:
-            r4.items["brew_rig"] = ("Gourd is brewing some sort of oatmeal \
-                                    stout on the brew rig. Did you really \
-                                        take his beer?")
+            r4.items["brew_rig"] = ("Gourd is brewing some sort of oatmeal " \
+                                    "stout on the brew rig. Did you really " \
+                                        "take his beer?")
 
     if currentRoom == r5:
         if dragonDead == True:
             #changes the name of the dragon once killed
-            del r5.items["dragon"]
+            del r5.items["dragon!!!"]
             r5.addItem("dead_dragon", "Yup, that's a dead dragon, alright")
             #reveals the previously hidden chest
             r5.addItem("chest", "It is very large and appears to be locked")
@@ -289,8 +289,8 @@ createRooms()
 game = "playing"
 
 #game introduction
-print ("Welcome! Have a look around, and you never know what you might find. \
-       Access your available options at any time by typing \"options\"")
+print ("Welcome! Have a look around, and you never know what you might find." \
+       " Access your available options at any time by typing \"options\"")
 
 #displays character's status
 while (True):
@@ -328,8 +328,8 @@ while (True):
     
     #displays the options at the player's request
     if (action == "options"):
-        response = ("Your verb options are go, look, take, open, place, and \
-                    shoot. \n Your noun options are {} {}".format(inventory, \
+        response = ("Your verb options are go, look, take, open, place, and " \
+                    "shoot. \n Your noun options are {} {}".format(inventory, \
                         currentRoom.items))
     
     #controlls all actions/ executes player input
