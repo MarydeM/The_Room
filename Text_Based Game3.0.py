@@ -16,14 +16,16 @@
 #Used for the timer on the Dragon
 from tkinter import Tk
 from tkinter import Canvas
+from tkinter import *
 from time import time
 
 class Room(object):
     
     #the constructor 
-    def __init__(self, name):
+    def __init__(self, name, image):
         self.name = name
         #Dictionaries
+        self.image = image
         self.exits = {}
         self.items = {}
         self.grabbables = []
@@ -35,7 +37,15 @@ class Room(object):
                                       
     @name.setter                      
     def name(self, value):            
-        self._name = value            
+        self._name = value
+
+    @property
+    def image(self):
+        return self._image
+
+    @image.setter
+    def image(self, value):
+        self._image = value
                                       
     @property                         
     def exits(self):                  
@@ -87,15 +97,31 @@ class Room(object):
         return s
     
     #Exit Class
-class Game(Canvas):
+class Game(Frame):
 
     def __init__(self, parent):
+        #call the constructor 
+        Frame.__init__(self.parent)
         self.parent = parent
         self.setupGUI()
 
     def setupGUI(self):
-        self._my_canvas=Canvas(window, width=WIDTH, height=HEIGHT, background='white')
-        self._my_canvas.grid(row=0, column=0)
+        #Organize the GUI
+        self.pack(fill=BOTH, expand=1)
+        Game.player_input = Entry(self, bg='white')
+        Game.player_input.bind('<return>', self.process)
+        Game.player_input.pack(side=BOTTOM, fill=X)
+        Game.player_input.focus()
+        img = None
+        Game.image = Label(self, width=WIDTH // 2, image=img)
+        Game.image_names.image = img
+        Game.image.pack(side=LEFT, fill=Y)
+        Game.image.pack_propagate(False)
+        text_frame = FRAME(self, width=WIDTH // 2)
+        Game.text = Text(text_frame, bg='lightgrey', state=DISABLED)
+        Game.text.pack(fill=Y, expand=1)
+        text_frame.pack(side=RIGHT, fill=Y)
+        text_frame.pack_propagate(False)
 
     @property
     def parent(self):
@@ -103,6 +129,24 @@ class Game(Canvas):
 
     def parent(self, parent):
         self.parent = parent
+
+    def setRoomImage(self):
+        if(Game.currentRoom == None):
+            Game.img = PhotoImage(file = "Pictures\skull.gif")
+        else:
+            Game.text.inset(End, str(Game.currentRoom) +\
+                            "\nYou are carrying: " + str(Game.inventory) +\
+                            "\n\n" + status)
+        Game.text.config(state=DISABLED)
+
+    def process(self, event):
+        #grabs the players input from the bottom of the GUI
+        action = Game.player_input.get()
+        action = action.lower()
+        if(action == "quit" or action == "exit" or action == "bye"\
+           or action == "salut" or action == "sionara"\
+           or action == "au revoir"):
+            exit(0)
 
     def Play(self):
         pass
@@ -121,12 +165,12 @@ def createRooms():
     global r6
 
     #room names
-    r1 = Room("the livingroom")
-    r2 = Room("the bedroom")
-    r3 = Room("the office")
-    r4 = Room("the spare room")
-    r5 = Room("the Dungeon")
-    r6 = Room("the secret room")
+    r1 = Room("the livingroom", "Pictures\room1.gif")
+    r2 = Room("the bedroom", "Pictures\room1.gif")
+    r3 = Room("the office", "Pictures\room1.gif")
+    r4 = Room("the spare room", "Pictures\room1.gif")
+    r5 = Room("the Dungeon", "Pictures\room1.gif")
+    r6 = Room("the secret room", "Pictures\room1.gif")
 
     #room 1
     r1.addExit("east", r2)
@@ -168,8 +212,8 @@ def createRooms():
     r6.addExit("east", r3)
     r6.addItem("safe", "It has a dial on it. I wonder what the code could be.")
 
-    currentRoom = r1
-
+    Game.currentRoom = r1
+    Game.inventory = [] #initialize the player's inventory
 
 # edits the description of items once a grabable is in player's inventory
 def roomEdit():
@@ -303,18 +347,17 @@ def chest():##### This prints a chest when the game is won #####
     print ("*******************************************************************************")
     
 ######################################################################
-# START THE GAME!!!
+#                          START THE GAME!!!                         #
 ######################################################################
 WIDTH, HEIGHT = 800, 600 #window resolution
-inventory = [] 
-createRooms()
+createRooms() #moved inventory to createRooms()
 game = "playing"
 
 #create the window
 window = Tk()
 window.geometry("{0}x{1}".format(WIDTH, HEIGHT))
-window.title("Room Adventure... Revolutions")
-#create the GUI
+window.title("Room Adventure")
+#create the GUI and then play the game
 my_canvas = Game(window)
 my_canvas.Play()
 #wait for the window to close
