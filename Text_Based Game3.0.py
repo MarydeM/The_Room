@@ -14,8 +14,6 @@
     #there is a secret room that is revealed when the book is placed on the bookshelf
     
 #Used for the timer on the Dragon
-from tkinter import Tk
-from tkinter import Canvas
 from tkinter import *
 from time import time
 
@@ -106,20 +104,20 @@ class Game(Frame):
 
     def setupGUI(self):
         #Organize the GUI
-        self.pack(fill=BOTH, expand=1)
+        self.pack(fill = BOTH, expand = 1)
         #setup the player input at the bottom of the GUI
         #widget is a TKinter Entry
+        Game.player_input = Entry(self, bg ='white')
         #function process in the class
-        #push it to the bottom of the GUI and let it fill horrizontally
-        #give it focus so the player doesnt have to click it to type
-        Game.player_input = Entry(self, bg='white')
         Game.player_input.bind('<Return>', self.process)
-        Game.player_input.pack(side=BOTTOM, fill=X)
+        #push it to the bottom of the GUI and let it fill horrizontally
+        Game.player_input.pack(side = BOTTOM, fill = X)
+        #give it focus so the player doesnt have to click it to type
         Game.player_input.focus()
         #set image to the left of the GUI
+        img = None
         #the widget is a TKinter Label
         #don't let the image control the widget's size
-        img = None
         Game.image = Label(self, width=WIDTH // 2, image=img)
         Game.image_names.image = img
         Game.image.pack(side=LEFT, fill=Y)
@@ -201,6 +199,7 @@ class Game(Frame):
                         response = ("Item grabbed")
                         #no need to check anymore
                         break
+                    
         #Changes room picture, states new status, and edits room if necessary
         self.roomEdit()
         self.setStatus(response)
