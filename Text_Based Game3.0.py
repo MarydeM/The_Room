@@ -95,13 +95,68 @@ class Room():
         return s
     
     #Exit Class
+    
 class Game(Frame):
 
     def __init__(self, parent):
         #call the constructor
-        self.parent = parent
         Frame.__init__(self, parent)
+   
+    #creates the rooms
+    def createRooms(self):
+        #names are made global so they can be used elsewhere
+        global currentRoom
+        global r1
+        global r2
+        global r3
+        global r4
+        global r5
+        global r6
+        #room names and images connected to the room
+        r1 = Room("the livingroom", "Pictures/firstRoom.gif")
+        r2 = Room("the bedroom", "Pictures/secondRoom.gif")
+        r3 = Room("the office", "Pictures/thirdRoom.gif")
+        r4 = Room("the spare room", "Pictures/fourthRoom.gif")
+        r5 = Room("the Dungeon", "Pictures/firstRoom.gif")
+        r6 = Room("the secret room", "Pictures/firstRoom.gif")
+        #room 1
+        r1.addExit("east", r2)
+        r1.addExit("south", r3)
+        r1.addGrabbable("key")
+        r1.addItem("chair", "It is made of wicker and no one is sitting on it.")
+        r1.addItem("table", "It is made of oak. A golden key rests on it.")
+        #room 2
+        r2.addExit("west", r1)
+        r2.addExit("south", r4)
+        r2.addGrabbable("gun")
+        r2.addItem("closet", "There's just a dirty, old coat with a gun in " \
+                   "the pocket") 
+        r2.addItem("rug", "It is nice and Indian. It also needs to be vacuumed.")
+        r2.addItem("fireplace", "It is full of ashes.")
+        #room 3
+        r3.addExit("north", r1)
+        r3.addExit("east", r4)
+        r3.addGrabbable("book")
+        r3.addItem("bookshelves", "They are empty. Go figure.")
+        r3.addItem("statue", "There is nothing special about it.")
+        r3.addItem("desk", "The statue is resting on it. So is a book.")
+        # room 4
+        r4.addExit("north", r2)
+        r4.addExit("west", r3)
+        r4.addExit("south", r5) 
+        r4.addGrabbable("6-pack")
+        r4.addItem("brew_rig", "Gourd is brewing some sort of oatmeal stout on " \
+                   "the brew rig. A 6-pack is resting beside it.")
+        #room 5
+        r5.addExit("north", r4)
+        r5.addItem("dragon!!!", "Does it matter what it looks like?! Kill it!")
+        #room 6
+        r6.addExit("east", r3)
+        r6.addItem("safe", "It has a dial on it. I wonder what the code could be.")
+        Game.currentRoom = r1
+        Game.inventory = [] #initialize the player's inventory
 
+    #sets up the GUI
     def setupGUI(self):
         #Organize the GUI
         self.pack(fill = BOTH, expand = 1)
@@ -118,9 +173,9 @@ class Game(Frame):
         img = None
         #the widget is a TKinter Label
         #don't let the image control the widget's size
-        Game.image = Label(self, width=WIDTH // 2, image=img)
+        Game.image = Label(self, width = WIDTH // 2, image = img) ###this may be the picture problem###
         Game.image_names.image = img
-        Game.image.pack(side=LEFT, fill=Y)
+        Game.image.pack(side = LEFT, fill = Y)
         Game.image.pack_propagate(False)
         #setup the text to the right of the GUI
         #first, the frame in which the text will be placed
@@ -128,26 +183,28 @@ class Game(Frame):
         #the widget is a TKinter Text
         #disable it by default
         #don't let the widget control the frame's size
-        Game.text = Text(text_frame, bg='lightgrey', state=DISABLED)
-        Game.text.pack(fill=Y, expand=1)
-        text_frame.pack(side=RIGHT, fill=Y)
+        Game.text = Text(text_frame, bg = 'lightgrey', state = DISABLED)
+        Game.text.pack(fill = Y, expand = 1)
+        text_frame.pack(side = RIGHT, fill = Y)
         text_frame.pack_propagate(False)
 
-    @property
-    def parent(self):
-        return self.parent
+    # @property   #### I believe this code is uneccessary. Leaving it here for now ####
+    # def parent(self):
+    #     return self.parent
 
-    def parent(self, parent):
-        self.parent = parent
+    # def parent(self, parent):
+    #     self.parent = parent
 
+    #set the current room image
     def setRoomImage(self):
         if(Game.currentRoom == None):
             Game.img = PhotoImage(file = "Pictures\skull.gif")
         else:
             Game.img = PhotoImage(file = Game.currentRoom.image)
-        Game.image.config(image=Game.img)
+        Game.image.config(image = Game.img)
         Game.image.image = Game.img
 
+    #sets the status displayed on the right of the GUI
     def setStatus(self, status):
         Game.text.config(state = NORMAL)
         Game.text.delete("1.0", END)
@@ -160,7 +217,15 @@ class Game(Frame):
                              "\n\n" + status)
         Game.text.config(state = DISABLED)
 
-    def process(self, event):
+    #play the game
+    def play(self):
+        self.createRooms()
+        self.setupGUI()
+        self.setRoomImage()
+        self.setStatus("")
+
+    #processes the player's input
+    def process(self, event): ##### will add functions from the commented out portion here###
         #grabs the players input from the bottom of the GUI
         action = Game.player_input.get()
         #sets input to all lowercase
@@ -206,12 +271,7 @@ class Game(Frame):
         self.setRoomImage()
         Game.player_input.delete(0, END)
 
-    def Play(self):
-        self.createRooms()
-        self.setupGUI()
-        self.setRoomImage()
-        self.setStatus("")
-
+    #starts the Boss fight
     def dragon(self): ##### This Prints a Dragon ##### I dont know how this will go and just wanted to have it
         global start                                 #here
         start = time() ##### Starts a timer #####
@@ -230,59 +290,7 @@ class Game(Frame):
                          + " " * 11 + "\   `'  / \  `'  / \  `.' /\n"
                          + " " * 12 + "`.___,'   `.__,'   `.__,'\n")
 
-    def createRooms(self):
-        #names are made global so they can be used elsewhere
-        global currentRoom
-        global r1
-        global r2
-        global r3
-        global r4
-        global r5
-        global r6
-        #room names and images connected to the room
-        r1 = Room("the livingroom", "Pictures/firstRoom.gif")
-        r2 = Room("the bedroom", "Pictures/firstRoom.gif")
-        r3 = Room("the office", "Pictures/firstRoom.gif")
-        r4 = Room("the spare room", "Pictures/firstRoom.gif")
-        r5 = Room("the Dungeon", "Pictures/firstRoom.gif")
-        r6 = Room("the secret room", "Pictures/firstRoom.gif")
-        #room 1
-        r1.addExit("east", r2)
-        r1.addExit("south", r3)
-        r1.addGrabbable("key")
-        r1.addItem("chair", "It is made of wicker and no one is sitting on it.")
-        r1.addItem("table", "It is made of oak. A golden key rests on it.")
-        #room 2
-        r2.addExit("west", r1)
-        r2.addExit("south", r4)
-        r2.addGrabbable("gun")
-        r2.addItem("closet", "There's just a dirty, old coat with a gun in " \
-                   "the pocket") 
-        r2.addItem("rug", "It is nice and Indian. It also needs to be vacuumed.")
-        r2.addItem("fireplace", "It is full of ashes.")
-        #room 3
-        r3.addExit("north", r1)
-        r3.addExit("east", r4)
-        r3.addGrabbable("book")
-        r3.addItem("bookshelves", "They are empty. Go figure.")
-        r3.addItem("statue", "There is nothing special about it.")
-        r3.addItem("desk", "The statue is resting on it. So is a book.")
-        # room 4
-        r4.addExit("north", r2)
-        r4.addExit("west", r3)
-        r4.addExit("south", r5) 
-        r4.addGrabbable("6-pack")
-        r4.addItem("brew_rig", "Gourd is brewing some sort of oatmeal stout on " \
-                   "the brew rig. A 6-pack is resting beside it.")
-        #room 5
-        r5.addExit("north", r4)
-        r5.addItem("dragon!!!", "Does it matter what it looks like?! Kill it!")
-        #room 6
-        r6.addExit("east", r3)
-        r6.addItem("safe", "It has a dial on it. I wonder what the code could be.")
-        Game.currentRoom = r1
-        Game.inventory = [] #initialize the player's inventory
-
+    
     # edits the description of items once a grabable is in player's inventory
     def roomEdit(self):
         if Game.currentRoom == r1:
@@ -306,8 +314,6 @@ class Game(Frame):
                 r5.addItem("dead_dragon", "Yup, that's a dead dragon, alright")
                 #reveals the previously hidden chest
                 r5.addItem("chest", "It is very large and appears to be locked")
-
-#moved create rooms to Game class
            
 #setting starting game variables 
 shots = 0
@@ -415,15 +421,18 @@ def chest():##### This prints a chest when the game is won #####
 ######################################################################
 #                          START THE GAME!!!                         #
 ######################################################################
-WIDTH, HEIGHT = 800, 600 #window resolution
+
+#window resolution
+WIDTH, HEIGHT = 800, 600
 
 #create the window
 window = Tk()
-window.geometry("{0}x{1}".format(WIDTH, HEIGHT))
+# window.geometry("{0}x{1}".format(WIDTH, HEIGHT))
 window.title("Room Adventure")
-#create the GUI and then play the game
+#create the GUI
 my_canvas = Game(window)
-my_canvas.Play()
+#play the game
+my_canvas.play()
 #wait for the window to close
 window.mainloop()
 
