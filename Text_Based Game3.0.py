@@ -101,7 +101,7 @@ class Game(Frame):
 
     def __init__(self, parent):
         #call the constructor 
-        Frame.__init__(self.parent)
+        Frame.__init__(self, parent)
         self.parent = parent
         self.setupGUI()
 
@@ -109,7 +109,7 @@ class Game(Frame):
         #Organize the GUI
         self.pack(fill=BOTH, expand=1)
         Game.player_input = Entry(self, bg='white')
-        Game.player_input.bind('<return>', self.process)
+        Game.player_input.bind('<Return>', self.process)
         Game.player_input.pack(side=BOTTOM, fill=X)
         Game.player_input.focus()
         img = None
@@ -117,7 +117,7 @@ class Game(Frame):
         Game.image_names.image = img
         Game.image.pack(side=LEFT, fill=Y)
         Game.image.pack_propagate(False)
-        text_frame = FRAME(self, width=WIDTH // 2)
+        text_frame = Frame(self, width=WIDTH // 2)
         Game.text = Text(text_frame, bg='lightgrey', state=DISABLED)
         Game.text.pack(fill=Y, expand=1)
         text_frame.pack(side=RIGHT, fill=Y)
@@ -139,17 +139,151 @@ class Game(Frame):
                             "\n\n" + status)
         Game.text.config(state=DISABLED)
 
+    def setStatus(self, status):
+        Game.text.config(state = NORMAL)
+        Game.text.delete("1.0", END)
+        if(Game.currentRoom == None):
+            #If dead, let the player know
+            Game.text.insert(END, "You are dead. The only thing you can do now is quit.\n")
+        else:
+            Game.text.insert(END, str(Game.currentRoom) +\
+                             "\nYou are carrying: " + str(Game.inventory) +\
+                             "\n\n" + status)
+        Game.text.config(state = DISABLED)
+
     def process(self, event):
         #grabs the players input from the bottom of the GUI
         action = Game.player_input.get()
+        #sets input to all lowercase
         action = action.lower()
+        #set a default response
+        response = ("I don't quite understand. Try verb noun. Valid verbs are go, look, and take")
         if(action == "quit" or action == "exit" or action == "bye"\
            or action == "salut" or action == "sionara"\
            or action == "au revoir"):
             exit(0)
+        if(Game.currentRoom == None):
+            #clears player's input
+            Game.player_input.delete(0, End)
+            return
+        words = action.split()
+        if(len(words) == 2):
+            verb = words[0]
+            noun = words[1]
+            if(verb == "go"):
+                response = ("Invalid exit.")
+                if(noun in Game.currentRoom.exits):
+                    Game.currentRoom = Game.currentRoom.exits[noun]
+                    response = ("Room changed")
+            elif(verb == "look"):
+                response = "I don't see that item."
+                if(noun in Game.currentRoom.items):
+                    response = Game.currentRoom.items[noun]
+            elif(verb == "take"):
+                response = ("I don't see that item")
+                for grabbable in Game.currentRoom.grabbables:
+                    if(noun == grabbable):
+                        Game.inventory.append(grabbable)
+                        Game.currentRoom.delGrabbable(grabbable)
+                        response = ("Item grabbed")
+                        #no need to check anymore
+                        break
+        self.setStatus(response)
+        self.setRoomImage()
+        Game.player_input.delete(0, END)
 
     def Play(self):
         pass
+
+    def createRooms(self):
+        
+        #names are made global so they can be used elsewhere
+        global currentRoom
+        global r1
+        global r2
+        global r3
+        global r4
+        global r5
+        global r6
+
+        #room names and images connected to the room
+        r1 = Room("the livingroom", "Pictures\room1.gif")
+        r2 = Room("the bedroom", "Pictures\room1.gif")
+        r3 = Room("the office", "Pictures\room1.gif")
+        r4 = Room("the spare room", "Pictures\room1.gif")
+        r5 = Room("the Dungeon", "Pictures\room1.gif")
+        r6 = Room("the secret room", "Pictures\room1.gif")
+
+        #room 1
+        r1.addExit("east", r2)
+        r1.addExit("south", r3)
+        r1.addGrabbable("key")
+        r1.addItem("chair", "It is made of wicker and no one is sitting on it.")
+        r1.addItem("table", "It is made of oak. A golden key rests on it.")
+
+        #room 2
+        r2.addExit("west", r1)
+        r2.addExit("south", r4)
+        r2.addGrabbable("gun")
+        r2.addItem("closet", "There's just a dirty, old coat with a gun in " \
+                   "the pocket") 
+        r2.addItem("rug", "It is nice and Indian. It also needs to be vacuumed.")
+        r2.addItem("fireplace", "It is full of ashes.")
+
+        #room 3
+        r3.addExit("north", r1)
+        r3.addExit("east", r4)
+        r3.addGrabbable("book")
+        r3.addItem("bookshelves", "They are empty. Go figure.")
+        r3.addItem("statue", "There is nothing special about it.")
+        r3.addItem("desk", "The statue is resting on it. So is a book.")
+
+        # room 4
+        r4.addExit("north", r2)
+        r4.addExit("west", r3)
+        r4.addExit("south", r5) 
+        r4.addGrabbable("6-pack")
+        r4.addItem("brew_rig", "Gourd is brewing some sort of oatmeal stout on " \
+                   "the brew rig. A 6-pack is resting beside it.")
+
+        #room 5
+        r5.addExit("north", r4)
+        r5.addItem("dragon!!!", "Does it matter what it looks like?! Kill it!")
+        
+        #room 6
+        r6.addExit("east", r3)
+        r6.addItem("safe", "It has a dial on it. I wonder what the code could be.")
+
+        Game.currentRoom = r1
+        Game.inventory = [] #initialize the player's inventory
+
+    # edits the description of items once a grabable is in player's inventory
+    def roomEdit(self):
+        if currentRoom == r1:
+            if "key" in inventory:
+                r1.items["table"] = ("It is made of oak. Nothing is on it")
+                
+        if currentRoom == r2:
+            if "gun" in inventory:
+                r2.items["closet"] = ("There's just a dirty, old coat")
+      
+        if currentRoom == r3:
+            if "book" in inventory:
+                r3.items["desk"] = ("The statue is resting on it")
+                
+        if currentRoom == r4:
+            if "6-pack" in inventory:
+                r4.items["brew_rig"] = ("Gourd is brewing some sort of oatmeal " \
+                                        "stout on the brew rig. Did you really " \
+                                            "take his beer?")
+
+        if currentRoom == r5:
+            if dragonDead == True:
+                #changes the name of the dragon once killed
+                del r5.items["dragon!!!"]
+                r5.addItem("dead_dragon", "Yup, that's a dead dragon, alright")
+                #reveals the previously hidden chest
+                r5.addItem("chest", "It is very large and appears to be locked")
 
 
 #Creates the rooms and floor layout
@@ -164,7 +298,7 @@ def createRooms():
     global r5
     global r6
 
-    #room names
+    #room names and images connected to the room
     r1 = Room("the livingroom", "Pictures\room1.gif")
     r2 = Room("the bedroom", "Pictures\room1.gif")
     r3 = Room("the office", "Pictures\room1.gif")
