@@ -18,7 +18,6 @@ from tkinter import Tk
 from tkinter import Canvas
 from tkinter import *
 from time import time
-import os
 
 class Room():
     
@@ -178,6 +177,8 @@ class Game(Frame):
             #clears player's input
             Game.player_input.delete(0, End)
             return
+        if(Game.currentRoom == r5):
+            self.dragon()
         words = action.split()
         if(len(words) == 2):
             verb = words[0]
@@ -200,6 +201,8 @@ class Game(Frame):
                         response = ("Item grabbed")
                         #no need to check anymore
                         break
+        #Changes room picture, states new status, and edits room if necessary
+        self.roomEdit()
         self.setStatus(response)
         self.setRoomImage()
         Game.player_input.delete(0, END)
@@ -209,6 +212,24 @@ class Game(Frame):
         self.setupGUI()
         self.setRoomImage()
         self.setStatus("")
+
+    def dragon(self): ##### This Prints a Dragon ##### I dont know how this will go and just wanted to have it
+        global start                                 #here
+        start = time() ##### Starts a timer #####
+        Game.text.insert(END, " " * 14 + "_" * 14               
+                         + " " * 8 + ",===:'.," + " " * 12 + "`-._\n"
+                         + " " * 13 + "`:.`---.__" + " " * 9 + "`-._\n"
+                         + " " * 15 + "`:.     `--.         `.\n"
+                         + " " * 17 + "\.        `.         `.\n"
+                         + " " * 9 + "(,,(,    \.         `.   ____,-`.,\n"
+                         + " " * 6 + "(,'     `/   \.   ,--.___`.'\n"
+                         + " " * 2 + ",  ,'  ,--.  `,   \.;'         `\n"
+                         + " " * 3 + "`{D, {    \  :    \;\n"
+                         + " " * 5 + "V,,'    /  /    //\n"
+                         + " " * 5 + "j;;    /  ,' ,-//.    ,---.      ,\n"
+                         + " " * 5 + "\;'   /  ,' /  _  \  /  _  \   ,'/\n" 
+                         + " " * 11 + "\   `'  / \  `'  / \  `.' /\n"
+                         + " " * 12 + "`.___,'   `.__,'   `.__,'\n")
 
     def createRooms(self):
         #names are made global so they can be used elsewhere
@@ -265,21 +286,21 @@ class Game(Frame):
 
     # edits the description of items once a grabable is in player's inventory
     def roomEdit(self):
-        if currentRoom == r1:
-            if "key" in inventory:
+        if Game.currentRoom == r1:
+            if "key" in Game.inventory:
                 r1.items["table"] = ("It is made of oak. Nothing is on it")
-        if currentRoom == r2:
-            if "gun" in inventory:
+        if Game.currentRoom == r2:
+            if "gun" in Game.inventory:
                 r2.items["closet"] = ("There's just a dirty, old coat")
-        if currentRoom == r3:
-            if "book" in inventory:
+        if Game.currentRoom == r3:
+            if "book" in Game.inventory:
                 r3.items["desk"] = ("The statue is resting on it")
-        if currentRoom == r4:
-            if "6-pack" in inventory:
+        if Game.currentRoom == r4:
+            if "6-pack" in Game.inventory:
                 r4.items["brew_rig"] = ("Gourd is brewing some sort of oatmeal " \
                                         "stout on the brew rig. Did you really " \
                                             "take his beer?")
-        if currentRoom == r5:
+        if Game.currentRoom == r5:
             if dragonDead == True:
                 #changes the name of the dragon once killed
                 del r5.items["dragon!!!"]
@@ -288,31 +309,6 @@ class Game(Frame):
                 r5.addItem("chest", "It is very large and appears to be locked")
 
 #moved create rooms to Game class
-
-
-# edits the description of items once a grabable is in player's inventory
-def roomEdit():
-    if currentRoom == r1:
-        if "key" in inventory:
-            r1.items["table"] = ("It is made of oak. Nothing is on it")
-    if currentRoom == r2:
-        if "gun" in inventory:
-            r2.items["closet"] = ("There's just a dirty, old coat")
-    if currentRoom == r3:
-        if "book" in inventory:
-            r3.items["desk"] = ("The statue is resting on it")
-    if currentRoom == r4:
-        if "6-pack" in inventory:
-            r4.items["brew_rig"] = ("Gourd is brewing some sort of oatmeal " \
-                                    "stout on the brew rig. Did you really " \
-                                        "take his beer?")
-    if currentRoom == r5:
-        if dragonDead == True:
-            #changes the name of the dragon once killed
-            del r5.items["dragon!!!"]
-            r5.addItem("dead_dragon", "Yup, that's a dead dragon, alright")
-            #reveals the previously hidden chest
-            r5.addItem("chest", "It is very large and appears to be locked")
            
 #setting starting game variables 
 shots = 0
@@ -421,7 +417,6 @@ def chest():##### This prints a chest when the game is won #####
 #                          START THE GAME!!!                         #
 ######################################################################
 WIDTH, HEIGHT = 800, 600 #window resolution
-print(os.listdir('.'))
 
 #create the window
 window = Tk()
