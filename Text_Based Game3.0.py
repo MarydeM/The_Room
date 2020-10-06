@@ -15,7 +15,7 @@
     
 #Used for the timer on the Dragon
 from tkinter import *
-from time import time
+import time
 
 class Room():
     
@@ -98,8 +98,8 @@ class Room():
     
 class Game(Frame):
 
+    #call the constructor
     def __init__(self, parent):
-        #call the constructor
         Frame.__init__(self, parent)
    
     #creates the rooms
@@ -174,6 +174,7 @@ class Game(Frame):
         #the widget is a TKinter Label
         #don't let the image control the widget's size
         Game.image = Label(self, width = WIDTH // 2, image=img)
+        Game.image = Label(self, width = WIDTH // 2, image = img)
         Game.image_names.image = img
         Game.image.pack(side = LEFT, fill = Y)
         Game.image.pack_propagate(False)
@@ -187,13 +188,6 @@ class Game(Frame):
         Game.text.pack(fill = Y, expand = 1)
         text_frame.pack(side = RIGHT, fill = Y)
         text_frame.pack_propagate(False)
-
-    # @property   #### I believe this code is uneccessary. Leaving it here for now ####
-    # def parent(self):
-    #     return self.parent
-
-    # def parent(self, parent):
-    #     self.parent = parent
 
     #set the current room image
     def setRoomImage(self):
@@ -210,7 +204,8 @@ class Game(Frame):
         Game.text.delete("1.0", END)
         if(Game.currentRoom == None):
             #If dead, let the player know
-            Game.text.insert(END, "You are dead. The only thing you can do now is quit.\n")
+            Game.text.insert(END, "You are dead. The only thing you can do now"\
+                             " is quit.\n")
         else:
             Game.text.insert(END, str(Game.currentRoom) +\
                              "\nYou are carrying: " + str(Game.inventory) +\
@@ -225,34 +220,44 @@ class Game(Frame):
         self.setStatus("")
 
     #processes the player's input
-    def process(self, event): ##### will add functions from the commented out portion here###
+    def process(self, event):
         #grabs the players input from the bottom of the GUI
         action = Game.player_input.get()
         #sets input to all lowercase
         action = action.lower()
         #set a default response
-        response = ("I don't quite understand. Try verb noun. Valid verbs are go, look, and take")
+        response = ("I don't quite understand. Try verb noun. Valid verbs are" \
+                    " go, look, take, open, place, and shoot.")
+        #allows player to exit the game
         if(action == "quit" or action == "exit" or action == "bye"\
            or action == "salut" or action == "sionara"\
            or action == "au revoir"):
-            exit(0)
+            #closes the window and the program
+            window.destroy()
+        #displays the options at the player's request
+        if (action == "options"):
+            response = ("Your verb options are go, look, take, open, place," \
+                        "and shoot.")
         if(Game.currentRoom == None):
             #clears player's input
             Game.player_input.delete(0, End)
             return
-        if(Game.currentRoom == r5):
-            self.dragon()
+        #for two word inputs (verb, noun)
         words = action.split()
         if(len(words) == 2):
             verb = words[0]
             noun = words[1]
-            if(verb == "go"):
+            if (verb == "go"):
                 response = ("Invalid exit.")
-                if(noun in Game.currentRoom.exits):
+                if (noun in Game.currentRoom.exits):
                     Game.currentRoom = Game.currentRoom.exits[noun]
                     response = ("Room changed")
+                    #starts the dragon attack
+                    if Game.currentRoom == r5 and dragonDead == False:
+                        response = ("A dragon is atatcking you! Shoot him!")
+                        self.dragon()     
             elif(verb == "look"):
-                response = "I don't see that item."
+                response = ("I don't see that item.")
                 if(noun in Game.currentRoom.items):
                     response = Game.currentRoom.items[noun]
             elif(verb == "take"):
@@ -262,6 +267,7 @@ class Game(Frame):
                         Game.inventory.append(grabbable)
                         Game.currentRoom.delGrabbable(grabbable)
                         response = ("Item grabbed")
+            
                         #no need to check anymore
                         break
                     
@@ -274,7 +280,7 @@ class Game(Frame):
     #starts the Boss fight
     def dragon(self): ##### This Prints a Dragon ##### I dont know how this will go and just wanted to have it
         global start                                 #here
-        start = time() ##### Starts a timer #####
+        start = time.time() ##### Starts a timer #####
         Game.text.insert(END, " " * 14 + "_" * 14               
                          + " " * 8 + ",===:'.," + " " * 12 + "`-._\n"
                          + " " * 13 + "`:.`---.__" + " " * 9 + "`-._\n"
@@ -314,11 +320,6 @@ class Game(Frame):
                 r5.addItem("dead_dragon", "Yup, that's a dead dragon, alright")
                 #reveals the previously hidden chest
                 r5.addItem("chest", "It is very large and appears to be locked")
-           
-#setting starting game variables 
-shots = 0
-dragonDead = False
-characterDead = False
 
 #enables dragon shooting abilities 
 def shoot():
@@ -328,21 +329,24 @@ def shoot():
     global characterDead
     shots += 1
     end = time()
-    elapsed = end - start ##### players have ten seconds to kill the dragon #####
+    elapsed = end - start
+    # players have ten seconds to kill the dragon
     if shots < 2:
         if elapsed > 10:
-            characterDead = True ##### Executes the Death function #####
+            # Executes the Death function
+            characterDead = True
         return "Got him! But he's still alive!!" 
     elif shots < 4:
         if elapsed > 10:
-            characterDead = True ##### Executes the Death function #####
+            characterDead = True
         return "He's getting closer to you!"
     elif shots < 6:
         if elapsed > 10:
-            characterDead = True ##### Executes the Death function #####
+            characterDead = True
         return "Almost there!"
     elif shots == 6:
-        dragonDead = True ##### When this changes, the status of the character can be printed again.#####
+        # When this changes, the status of the character can be printed again
+        dragonDead = True
         return "He's dead! Well that was exciting"
     elif shots > 6:
         return "He's already dead, you psychopath"              
@@ -375,25 +379,6 @@ def death():
     print (" " * 2 + "$" * 10 + "\"" * 4 + " " * 11 + "\"\"" + "$" * 11 + "\"")
     print (" " * 3 + "\"" + "$" * 5 + "\"" + " " * 22 + "\"\"" + "$" * 4 + "\"\"")
     print (" " * 5 + "$" * 3 + "\"" + " " * 25 + "$" * 4 + "\"")
-
-#displays a dragon when it is encountered        
-def dragon(): ##### This Prints a Dragon #####
-    global start 
-    start = time() ##### Starts a timer #####
-    print (" " * 14 + "_" * 14               )
-    print (" " * 8 + ",===:'.," + " " * 12 + "`-._"        )           
-    print (" " * 13 + "`:.`---.__" + " " * 9 + "`-._"      )                 
-    print (" " * 15 + "`:.     `--.         `."            )     
-    print (" " * 17 + "\.        `.         `."            )  
-    print (" " * 9 + "(,,(,    \.         `.   ____,-`.,"  )           
-    print (" " * 6 + "(,'     `/   \.   ,--.___`.'"        )      
-    print (" " * 2 + ",  ,'  ,--.  `,   \.;'         `"    )               
-    print (" " * 3 + "`{D, {    \  :    \;"                )                    
-    print (" " * 5 + "V,,'    /  /    //"                  )               
-    print (" " * 5 + "j;;    /  ,' ,-//.    ,---.      ,"  )                 
-    print (" " * 5 + "\;'   /  ,' /  _  \  /  _  \   ,'/"  )                 
-    print (" " * 11 + "\   `'  / \  `'  / \  `.' /"          )    
-    print (" " * 12 + "`.___,'   `.__,'   `.__,'")
     
 #displays a chest when it is opened
 def chest():##### This prints a chest when the game is won #####
@@ -422,12 +407,20 @@ def chest():##### This prints a chest when the game is won #####
 #                          START THE GAME!!!                         #
 ######################################################################
 
+#setting starting game variables 
+shots = 0
+dragonDead = False
+characterDead = False
+
+#Game Intro
+# print ("Welcome! Have a look around, and you never know what you might find." \
+      # " Access your available options at any time by typing \"options\"")
+
 #window resolution
 WIDTH, HEIGHT = 800, 600
 
 #create the window
 window = Tk()
-# window.geometry("{0}x{1}".format(WIDTH, HEIGHT))
 window.title("Room Adventure")
 #create the GUI
 my_canvas = Game(window)
@@ -439,8 +432,8 @@ window.mainloop()
 
 #I commented this out while we put the game together
 ###game introduction
-##print ("Welcome! Have a look around, and you never know what you might find." \
-##       " Access your available options at any time by typing \"options\"")
+# print ("Welcome! Have a look around, and you never know what you might find." \
+#       " Access your available options at any time by typing \"options\"")
 ##
 ###displays character's status
 ##while (True):
@@ -449,9 +442,9 @@ window.mainloop()
 ##    if shots == 0 or dragonDead == True:
 ##        status = "{}\nYou are carrying: {}\n".format(currentRoom, inventory)
 ##        #ends the game once the gold is found
-##        if game == "over":
-##            print ("You are carrying: {}".format(inventory))
-##            break #Exits the game
+    # if game == "over":
+    #     print ("You are carrying: {}".format(inventory))
+    #     break #Exits the game
 ##        print ("=========================================================")
 ##        print (status)
 ##    
@@ -470,17 +463,9 @@ window.mainloop()
 ##    response = ("I don't understand. Try verb noun.")
 ##    
 ##    #allows player to exit the game
-##    if (action == "quit" or action == "exit" or action == "bye" or \
-##        action == "end"): 
-##        response = "Quitting already? That's no fun. Goodbye"
-##        print (response)
-##        break
+
 ##    
-##    #displays the options at the player's request
-##    if (action == "options"):
-##        response = ("Your verb options are go, look, take, open, place, and " \
-##                    "shoot. \n Your noun options are {} {}".format(inventory, \
-##                        currentRoom.items))
+
 ##    
 ##    #controlls all actions/ executes player input
 ##    #splits input into a list
@@ -489,20 +474,20 @@ window.mainloop()
 ##        verb = words[0]
 ##        noun = words[1]
 ##        
-##        if (verb == "go"):
-##            response = "Invalid exit."
-##            if (noun in currentRoom.exits):
-##                currentRoom = currentRoom.exits[noun]
-##                response = "Room changed."
-##                #starts the dragon attack
-##                if currentRoom == r5 and dragonDead == False:
-##                    response = "A dragon is atatcking you! Shoot him!"
-##                    dragon()
+# if (verb == "go"):
+#     response = "Invalid exit."
+#     if (noun in currentRoom.exits):
+#         currentRoom = currentRoom.exits[noun]
+#         response = "Room changed."
+#         #starts the dragon attack
+#         if currentRoom == r5 and dragonDead == False:
+#             response = "A dragon is atatcking you! Shoot him!"
+#             dragon()
 ##                
-##        elif (verb == "look"):
-##            response = "I don't see that item."
-##            if (noun in currentRoom.items):
-##                response = currentRoom.items[noun]
+#        elif (verb == "look"):
+#            response = "I don't see that item."
+#            if (noun in currentRoom.items):
+#                response = currentRoom.items[noun]
 ##                              
 ##        elif (verb == "take" or verb == "grab"):
 ##            response = "I don't see that item."
