@@ -14,11 +14,8 @@
     #there is a secret room that is revealed when the book is placed on the bookshelf
     
 #Used for the timer on the Dragon
-from tkinter import Tk
-from tkinter import Canvas
 from tkinter import *
 from time import time
-import os
 
 class Room():
     
@@ -98,118 +95,14 @@ class Room():
         return s
     
     #Exit Class
+    
 class Game(Frame):
 
     def __init__(self, parent):
         #call the constructor
-        self.parent = parent
         Frame.__init__(self, parent)
-
-    def setupGUI(self):
-        #Organize the GUI
-        self.pack(fill=BOTH, expand=1)
-        #setup the player input at the bottom of the GUI
-        #widget is a TKinter Entry
-        #function process in the class
-        #push it to the bottom of the GUI and let it fill horrizontally
-        #give it focus so the player doesnt have to click it to type
-        Game.player_input = Entry(self, bg='white')
-        Game.player_input.bind('<Return>', self.process)
-        Game.player_input.pack(side=BOTTOM, fill=X)
-        Game.player_input.focus()
-        #set image to the left of the GUI
-        #the widget is a TKinter Label
-        #don't let the image control the widget's size
-        img = None
-        Game.image = Label(self, width=WIDTH // 2, image=img)
-        Game.image_names.image = img
-        Game.image.pack(side=LEFT, fill=Y)
-        Game.image.pack_propagate(False)
-        #setup the text to the right of the GUI
-        #first, the frame in which the text will be placed
-        text_frame = Frame(self, width=WIDTH // 2)
-        #the widget is a TKinter Text
-        #disable it by default
-        #don't let the widget control the frame's size
-        Game.text = Text(text_frame, bg='lightgrey', state=DISABLED)
-        Game.text.pack(fill=Y, expand=1)
-        text_frame.pack(side=RIGHT, fill=Y)
-        text_frame.pack_propagate(False)
-
-    @property
-    def parent(self):
-        return self.parent
-
-    def parent(self, parent):
-        self.parent = parent
-
-    def setRoomImage(self):
-        if(Game.currentRoom == None):
-            Game.img = PhotoImage(file = "Pictures\skull.gif")
-        else:
-            Game.img = PhotoImage(file = Game.currentRoom.image)
-        Game.image.config(image=Game.img)
-        Game.image.image = Game.img
-
-    def setStatus(self, status):
-        Game.text.config(state = NORMAL)
-        Game.text.delete("1.0", END)
-        if(Game.currentRoom == None):
-            #If dead, let the player know
-            Game.text.insert(END, "You are dead. The only thing you can do now is quit.\n")
-        else:
-            Game.text.insert(END, str(Game.currentRoom) +\
-                             "\nYou are carrying: " + str(Game.inventory) +\
-                             "\n\n" + status)
-        Game.text.config(state = DISABLED)
-
-    def process(self, event):
-        #grabs the players input from the bottom of the GUI
-        action = Game.player_input.get()
-        #sets input to all lowercase
-        action = action.lower()
-        #set a default response
-        response = ("I don't quite understand. Try verb noun. Valid verbs are go, look, and take")
-        if(action == "quit" or action == "exit" or action == "bye"\
-           or action == "salut" or action == "sionara"\
-           or action == "au revoir"):
-            exit(0)
-        if(Game.currentRoom == None):
-            #clears player's input
-            Game.player_input.delete(0, End)
-            return
-        words = action.split()
-        if(len(words) == 2):
-            verb = words[0]
-            noun = words[1]
-            if(verb == "go"):
-                response = ("Invalid exit.")
-                if(noun in Game.currentRoom.exits):
-                    Game.currentRoom = Game.currentRoom.exits[noun]
-                    response = ("Room changed")
-            elif(verb == "look"):
-                response = "I don't see that item."
-                if(noun in Game.currentRoom.items):
-                    response = Game.currentRoom.items[noun]
-            elif(verb == "take"):
-                response = ("I don't see that item")
-                for grabbable in Game.currentRoom.grabbables:
-                    if(noun == grabbable):
-                        Game.inventory.append(grabbable)
-                        Game.currentRoom.delGrabbable(grabbable)
-                        response = ("Item grabbed")
-                        #no need to check anymore
-                        break
-        self.setStatus(response)
-        self.setRoomImage()
-        Game.player_input.delete(0, END)
-
-    def Play(self):
-        self.createRooms()
-        self.setupGUI()
-        self.setRoomImage()
-        self.setStatus("")
-
+   
+    #creates the rooms
     def createRooms(self):
         #names are made global so they can be used elsewhere
         global currentRoom
@@ -221,9 +114,9 @@ class Game(Frame):
         global r6
         #room names and images connected to the room
         r1 = Room("the livingroom", "Pictures/firstRoom.gif")
-        r2 = Room("the bedroom", "Pictures/firstRoom.gif")
-        r3 = Room("the office", "Pictures/firstRoom.gif")
-        r4 = Room("the spare room", "Pictures/firstRoom.gif")
+        r2 = Room("the bedroom", "Pictures/secondRoom.gif")
+        r3 = Room("the office", "Pictures/thirdRoom.gif")
+        r4 = Room("the spare room", "Pictures/forthRoom.gif")
         r5 = Room("the Dungeon", "Pictures/firstRoom.gif")
         r6 = Room("the secret room", "Pictures/firstRoom.gif")
         #room 1
@@ -263,56 +156,164 @@ class Game(Frame):
         Game.currentRoom = r1
         Game.inventory = [] #initialize the player's inventory
 
+    #sets up the GUI
+    def setupGUI(self):
+        #Organize the GUI
+        self.pack(fill = BOTH, expand = 1)
+        #setup the player input at the bottom of the GUI
+        #widget is a TKinter Entry
+        Game.player_input = Entry(self, bg ='white')
+        #function process in the class
+        Game.player_input.bind('<Return>', self.process)
+        #push it to the bottom of the GUI and let it fill horrizontally
+        Game.player_input.pack(side = BOTTOM, fill = X)
+        #give it focus so the player doesnt have to click it to type
+        Game.player_input.focus()
+        #set image to the left of the GUI
+        img = None
+        #the widget is a TKinter Label
+        #don't let the image control the widget's size
+        Game.image = Label(self, width = WIDTH // 2, image=img)
+        Game.image_names.image = img
+        Game.image.pack(side = LEFT, fill = Y)
+        Game.image.pack_propagate(False)
+        #setup the text to the right of the GUI
+        #first, the frame in which the text will be placed
+        text_frame = Frame(self, width=WIDTH // 2)
+        #the widget is a TKinter Text
+        #disable it by default
+        #don't let the widget control the frame's size
+        Game.text = Text(text_frame, bg = 'lightgrey', state = DISABLED)
+        Game.text.pack(fill = Y, expand = 1)
+        text_frame.pack(side = RIGHT, fill = Y)
+        text_frame.pack_propagate(False)
+
+    # @property   #### I believe this code is uneccessary. Leaving it here for now ####
+    # def parent(self):
+    #     return self.parent
+
+    # def parent(self, parent):
+    #     self.parent = parent
+
+    #set the current room image
+    def setRoomImage(self):
+        if(Game.currentRoom == None):
+            Game.img = PhotoImage(file = "Pictures\skull.gif")
+        else:
+            Game.img = PhotoImage(file = Game.currentRoom.image)
+        Game.image.config(image = Game.img)
+        Game.image.image = Game.img
+
+    #sets the status displayed on the right of the GUI
+    def setStatus(self, status):
+        Game.text.config(state = NORMAL)
+        Game.text.delete("1.0", END)
+        if(Game.currentRoom == None):
+            #If dead, let the player know
+            Game.text.insert(END, "You are dead. The only thing you can do now is quit.\n")
+        else:
+            Game.text.insert(END, str(Game.currentRoom) +\
+                             "\nYou are carrying: " + str(Game.inventory) +\
+                             "\n\n" + status)
+        Game.text.config(state = DISABLED)
+
+    #play the game
+    def play(self):
+        self.createRooms()
+        self.setupGUI()
+        self.setRoomImage()
+        self.setStatus("")
+
+    #processes the player's input
+    def process(self, event): ##### will add functions from the commented out portion here###
+        #grabs the players input from the bottom of the GUI
+        action = Game.player_input.get()
+        #sets input to all lowercase
+        action = action.lower()
+        #set a default response
+        response = ("I don't quite understand. Try verb noun. Valid verbs are go, look, and take")
+        if(action == "quit" or action == "exit" or action == "bye"\
+           or action == "salut" or action == "sionara"\
+           or action == "au revoir"):
+            exit(0)
+        if(Game.currentRoom == None):
+            #clears player's input
+            Game.player_input.delete(0, End)
+            return
+        if(Game.currentRoom == r5):
+            self.dragon()
+        words = action.split()
+        if(len(words) == 2):
+            verb = words[0]
+            noun = words[1]
+            if(verb == "go"):
+                response = ("Invalid exit.")
+                if(noun in Game.currentRoom.exits):
+                    Game.currentRoom = Game.currentRoom.exits[noun]
+                    response = ("Room changed")
+            elif(verb == "look"):
+                response = "I don't see that item."
+                if(noun in Game.currentRoom.items):
+                    response = Game.currentRoom.items[noun]
+            elif(verb == "take"):
+                response = ("I don't see that item")
+                for grabbable in Game.currentRoom.grabbables:
+                    if(noun == grabbable):
+                        Game.inventory.append(grabbable)
+                        Game.currentRoom.delGrabbable(grabbable)
+                        response = ("Item grabbed")
+                        #no need to check anymore
+                        break
+                    
+        #Changes room picture, states new status, and edits room if necessary
+        self.roomEdit()
+        self.setStatus(response)
+        self.setRoomImage()
+        Game.player_input.delete(0, END)
+
+    #starts the Boss fight
+    def dragon(self): ##### This Prints a Dragon ##### I dont know how this will go and just wanted to have it
+        global start                                 #here
+        start = time() ##### Starts a timer #####
+        Game.text.insert(END, " " * 14 + "_" * 14               
+                         + " " * 8 + ",===:'.," + " " * 12 + "`-._\n"
+                         + " " * 13 + "`:.`---.__" + " " * 9 + "`-._\n"
+                         + " " * 15 + "`:.     `--.         `.\n"
+                         + " " * 17 + "\.        `.         `.\n"
+                         + " " * 9 + "(,,(,    \.         `.   ____,-`.,\n"
+                         + " " * 6 + "(,'     `/   \.   ,--.___`.'\n"
+                         + " " * 2 + ",  ,'  ,--.  `,   \.;'         `\n"
+                         + " " * 3 + "`{D, {    \  :    \;\n"
+                         + " " * 5 + "V,,'    /  /    //\n"
+                         + " " * 5 + "j;;    /  ,' ,-//.    ,---.      ,\n"
+                         + " " * 5 + "\;'   /  ,' /  _  \  /  _  \   ,'/\n" 
+                         + " " * 11 + "\   `'  / \  `'  / \  `.' /\n"
+                         + " " * 12 + "`.___,'   `.__,'   `.__,'\n")
+
+    
     # edits the description of items once a grabable is in player's inventory
     def roomEdit(self):
-        if currentRoom == r1:
-            if "key" in inventory:
+        if Game.currentRoom == r1:
+            if "key" in Game.inventory:
                 r1.items["table"] = ("It is made of oak. Nothing is on it")
-        if currentRoom == r2:
-            if "gun" in inventory:
+        if Game.currentRoom == r2:
+            if "gun" in Game.inventory:
                 r2.items["closet"] = ("There's just a dirty, old coat")
-        if currentRoom == r3:
-            if "book" in inventory:
+        if Game.currentRoom == r3:
+            if "book" in Game.inventory:
                 r3.items["desk"] = ("The statue is resting on it")
-        if currentRoom == r4:
-            if "6-pack" in inventory:
+        if Game.currentRoom == r4:
+            if "6-pack" in Game.inventory:
                 r4.items["brew_rig"] = ("Gourd is brewing some sort of oatmeal " \
                                         "stout on the brew rig. Did you really " \
                                             "take his beer?")
-        if currentRoom == r5:
+        if Game.currentRoom == r5:
             if dragonDead == True:
                 #changes the name of the dragon once killed
                 del r5.items["dragon!!!"]
                 r5.addItem("dead_dragon", "Yup, that's a dead dragon, alright")
                 #reveals the previously hidden chest
                 r5.addItem("chest", "It is very large and appears to be locked")
-
-#moved create rooms to Game class
-
-
-# edits the description of items once a grabable is in player's inventory
-def roomEdit():
-    if currentRoom == r1:
-        if "key" in inventory:
-            r1.items["table"] = ("It is made of oak. Nothing is on it")
-    if currentRoom == r2:
-        if "gun" in inventory:
-            r2.items["closet"] = ("There's just a dirty, old coat")
-    if currentRoom == r3:
-        if "book" in inventory:
-            r3.items["desk"] = ("The statue is resting on it")
-    if currentRoom == r4:
-        if "6-pack" in inventory:
-            r4.items["brew_rig"] = ("Gourd is brewing some sort of oatmeal " \
-                                    "stout on the brew rig. Did you really " \
-                                        "take his beer?")
-    if currentRoom == r5:
-        if dragonDead == True:
-            #changes the name of the dragon once killed
-            del r5.items["dragon!!!"]
-            r5.addItem("dead_dragon", "Yup, that's a dead dragon, alright")
-            #reveals the previously hidden chest
-            r5.addItem("chest", "It is very large and appears to be locked")
            
 #setting starting game variables 
 shots = 0
@@ -420,16 +421,18 @@ def chest():##### This prints a chest when the game is won #####
 ######################################################################
 #                          START THE GAME!!!                         #
 ######################################################################
-WIDTH, HEIGHT = 800, 600 #window resolution
-print(os.listdir('.'))
+
+#window resolution
+WIDTH, HEIGHT = 800, 600
 
 #create the window
 window = Tk()
-window.geometry("{0}x{1}".format(WIDTH, HEIGHT))
+# window.geometry("{0}x{1}".format(WIDTH, HEIGHT))
 window.title("Room Adventure")
-#create the GUI and then play the game
+#create the GUI
 my_canvas = Game(window)
-my_canvas.Play()
+#play the game
+my_canvas.play()
 #wait for the window to close
 window.mainloop()
 
