@@ -26,6 +26,7 @@ class Room():
         self.image = image
         self.exits = {}
         self.items = {}
+        #inventory
         self.grabbables = []
         
     #mutators and grabers
@@ -98,9 +99,16 @@ class Room():
     
 class Game(Frame):
 
-    #call the constructor
+    #constructor
     def __init__(self, parent):
+        #call the constructor
         Frame.__init__(self, parent)
+        
+    #setting starting game variables 
+    game = None
+    shots = 0
+    dragonDead = False
+    characterDead = False
    
     #creates the rooms
     def createRooms(self):
@@ -153,8 +161,9 @@ class Game(Frame):
         #room 6
         r6.addExit("east", r3)
         r6.addItem("safe", "It has a dial on it. I wonder what the code could be.")
+        #initialize the player's inventory 
         Game.currentRoom = r1
-        Game.inventory = [] #initialize the player's inventory
+        Game.inventory = [] 
 
     #sets up the GUI
     def setupGUI(self):
@@ -192,10 +201,10 @@ class Game(Frame):
     #set the current room image
     def setRoomImage(self):
         #sets skull image when character dies
-        if(characterDead == True):
+        if(self.characterDead == True):
             Game.img = PhotoImage(file = "Pictures\skull.gif")
         #sets chest image when character wins
-        elif(game == "over"):
+        elif(self.game == "over"):
             Game.img = PhotoImage(file = "Pictures\chest.gif")
         else:
             Game.img = PhotoImage(file = Game.currentRoom.image)
@@ -207,7 +216,7 @@ class Game(Frame):
         Game.text.config(state = NORMAL)
         Game.text.delete("1.0", END)
         #If dead, let the player know
-        if(characterDead == True):
+        if(self.characterDead == True):
             Game.text.insert(END, "You are dead. The only thing you can do now"\
                              " is quit.\n")
         else:
@@ -243,17 +252,17 @@ class Game(Frame):
             response = ("Your verb options are go, look, take, open, place," \
                         "and shoot.")
         #shoots the dragon
-        if (verb == "shoot"):
+        if (action == "shoot"):
             response = ("Shoot with what? Finger guns?")
             if ("gun" in Game.inventory):
                 response = ("You put a hole in the wall. Why would you do that?")
             if (Game.currentRoom == r5) and ("gun" in Game.inventory):
                 #deploys shoot function
-                response = shoot()
-        #We may not need this, since the room will never be None. Maybe we can change it to if characterDead == True.
-        if (Game.currentRoom == None):
+                response = (self.shoot())
+        #Ends the game 
+        if (self.characterDead == True):
             #clears player's input
-            Game.player_input.delete(0, End)
+            Game.player_input.delete(0, "end")  #This doesn't work for some reason
             return
         #for two word inputs (verb, noun)
         words = action.split()
@@ -267,7 +276,7 @@ class Game(Frame):
                     Game.currentRoom = Game.currentRoom.exits[noun]
                     response = ("Room changed")
                     #starts the dragon attack
-                    if Game.currentRoom == r5 and dragonDead == False:
+                    if Game.currentRoom == r5 and self.dragonDead == False:
                         response = ("A dragon is atatcking you! Shoot him!")
                         self.dragon()
             #to look at items
@@ -286,13 +295,13 @@ class Game(Frame):
             #opens the chest behind the dragon after it is revealed
             elif (verb == "open" or verb == "unlock"):
                 response = ("I can't open that.")
-                if (Game.currentRoom == r5) and (noun == "chest") and (dragonDead == True):
+                if (Game.currentRoom == r5) and (noun == "chest") and (self.dragonDead == True):
                     if ("key" in Game.inventory):
+                        #adds wealth to the player's inventory
                         Game.inventory.append("infinite_wealth")
-                        #prints the chest
-                        # chest()
                         response = ("So... much... GOLD!!! \n You're rich!!!")
-                        game = "over"
+                        #ends the game
+                        self.game = "over"
             #reveals secret room once book is placed on bookshelf
             elif (verb == "place"):
                 response = ("Place it where? The ground?!")
@@ -311,26 +320,12 @@ class Game(Frame):
         Game.player_input.delete(0, END)
 
     #starts the Boss fight
-    def dragon(self): ##### This Prints a Dragon ##### I dont know how this will go and just wanted to have it
-        global start                                 #here
-        start = time.time() ##### Starts a timer #####
-        Game.text.insert(END, " " * 14 + "_" * 14               
-                         + " " * 8 + ",===:'.," + " " * 12 + "`-._\n"
-                         + " " * 13 + "`:.`---.__" + " " * 9 + "`-._\n"
-                         + " " * 15 + "`:.     `--.         `.\n"
-                         + " " * 17 + "\.        `.         `.\n"
-                         + " " * 9 + "(,,(,    \.         `.   ____,-`.,\n"
-                         + " " * 6 + "(,'     `/   \.   ,--.___`.'\n"
-                         + " " * 2 + ",  ,'  ,--.  `,   \.;'         `\n"
-                         + " " * 3 + "`{D, {    \  :    \;\n"
-                         + " " * 5 + "V,,'    /  /    //\n"
-                         + " " * 5 + "j;;    /  ,' ,-//.    ,---.      ,\n"
-                         + " " * 5 + "\;'   /  ,' /  _  \  /  _  \   ,'/\n" 
-                         + " " * 11 + "\   `'  / \  `'  / \  `.' /\n"
-                         + " " * 12 + "`.___,'   `.__,'   `.__,'\n")
-
+    def dragon(self):
+        #Starts a timer for the player to kill the dragon
+        global start
+        start = time.time()
     
-    # edits the description of items once a grabable is in player's inventory
+    #edits the description of items once a grabable is in player's inventory
     def roomEdit(self):
         if Game.currentRoom == r1:
             if "key" in Game.inventory:
@@ -347,104 +342,49 @@ class Game(Frame):
                                         "stout on the brew rig. Did you really " \
                                             "take his beer?")
         if Game.currentRoom == r5:
-            if dragonDead == True and "dragon!!!" in r5.items:
+            if self.dragonDead == True and "dragon!!!" in r5.items:
                 #changes the name of the dragon once killed
                 del r5.items["dragon!!!"]
                 r5.addItem("dead_dragon", "Yup, that's a dead dragon, alright")
                 #reveals the previously hidden chest
                 r5.addItem("chest", "It is very large and appears to be locked")
 
-#enables dragon shooting abilities 
-def shoot():
-    global start
-    global shots 
-    global dragonDead
-    global characterDead
-    shots += 1
-    end = time()
-    elapsed = end - start
-    # players have ten seconds to kill the dragon
-    if shots < 2:
-        if elapsed > 10:
-            # Executes the Death function
-            characterDead = True
-        return "Got him! But he's still alive!!" 
-    elif shots < 4:
-        if elapsed > 10:
-            characterDead = True
-        return "He's getting closer to you!"
-    elif shots < 6:
-        if elapsed > 10:
-            characterDead = True
-        return "Almost there!"
-    elif shots == 6:
-        # When this changes, the status of the character can be printed again
-        dragonDead = True
-        return "He's dead! Well that was exciting"
-    elif shots > 6:
-        return "He's already dead, you psychopath"              
+    #enables dragon shooting abilities 
+    def shoot(self):
+        global start 
+        self.dragonDead
+        self.characterDead
+        self.shots += 1
+        #players have ten seconds to kill the dragon
+        end = time.time()
+        elapsed = end - start
+        #varied responses
+        if self.shots < 2:
+            if elapsed > 10:
+                # Executes the Death function
+                self.characterDead = True
+            return "Got him! But he's still alive!!" 
+        elif self.shots < 4:
+            if elapsed > 10:
+                self.characterDead = True
+            return "He's getting closer to you!"
+        elif self.shots < 6:
+            if elapsed > 10:
+                self.characterDead = True
+            return "Almost there!"
+        elif self.shots == 6:
+            # When this changes, the status of the character can be printed again
+            self.dragonDead = True
+            return "He's dead! Well that was exciting"
+        elif self.shots > 6:
+            return "He's already dead, you psychopath"           
 
-#displays a jolly roger when the player dies
 def death():
-    print (" " * 17 + "u" * 7)
-    print (" " * 13 + "u" * 2 + "$" * 11 + "u" * 2)
-    print (" " * 10 + "u" * 2 + "$" * 17 + "u" * 2)
-    print (" " * 9 + "u" + "$" * 21 + "u")
-    print (" " * 8 + "u" + "$" * 23 + "u")
-    print (" " * 7 + "u" + "$" * 25 + "u")
-    print (" " * 7 + "u" + "$" * 25 + "u")
-    print (" " * 7 + "u" + "$" * 6 + "\"" + " " * 3 + "\"" + "$" * 3 + "\"" + " " * 3 + "\"" + "$" * 6 + "u")
-    print (" " * 7 + "\"" + "$" * 4 + "\"" + " " * 6 + "u$u" + " " * 7 + "$" * 4 + "\"")
-    print (" " * 8 + "$" * 3 + "u" + " " * 7 + "u$u" + " " * 7 + "u" + "$" * 3)
-    print (" " * 8 + "$" * 3 + "u" + " " * 6 + "u" + "$" * 3 + "u" + " " * 6 + "u" + "$" * 3)
-    print (" " * 9 + "\"" + "$" * 4 + "u" * 2 + "$" * 3 + " " * 3 + "$" * 3 + "u" * 2 + "$" * 4 + "\"")
-    print (" " * 10 + "\"" + "$" * 7 + "\"" + " " * 3 + "\"" + "$" * 7 + "\"")
-    print (" " * 12 + "u" + "$" * 7 + "u" + "$" * 7 + "u")
-    print (" " * 13 + "u$\"$\"$\"$\"$\"$\"$u")
-    print (" " * 2 + "u" * 3 + " " * 8 + "$" * 2 + "u$ $ $ $ $u" + "$" * 2 + " " * 7 + "u" * 3)
-    print (" u" + "$" * 4 + " " * 8 + "$" * 5 + "u$u$u" + "$" * 3 + " " * 7 + "u" + "$" * 4)
-    print (" " * 2 + "$" * 5 + "u" * 2 + " " * 6 + "\"" + "$" * 9 + "\"" + " " * 5 + "u" * 2 + "$" * 6)
-    print ("u" + "$" * 11 + "u" * 2 + " " * 4 + "\"" * 5 + " " * 4 + "u" * 4 + "$" * 10)
-    print ("$" * 4 + "\"" * 3 + "$" * 10 + "u" * 3 + " " * 3 + "u" * 2 + "$" * 9 + "\"" * 3 + "$" * 3 + "\"")
-    print (" " + "\"" * 3 + " " * 6 + "\"" * 2 + "$" * 11 + "u" * 2 + " " + "\"" * 2 + "$" + "\"" * 3)
-    print (" " * 11 + "u" * 4 + " \"\"" + "$" * 10 + "u" * 3)
-    print (" " * 2 + "u" + "$" * 3 + "u" * 3 + "$" * 9 + "u" * 2 + " \"\"" + "$" * 11 + "u" * 3 + "$" * 3)
-    print (" " * 2 + "$" * 10 + "\"" * 4 + " " * 11 + "\"\"" + "$" * 11 + "\"")
-    print (" " * 3 + "\"" + "$" * 5 + "\"" + " " * 22 + "\"\"" + "$" * 4 + "\"\"")
-    print (" " * 5 + "$" * 3 + "\"" + " " * 25 + "$" * 4 + "\"")
-    
-#displays a chest when it is opened
-def chest():##### This prints a chest when the game is won #####
-    print ("*******************************************************************************")
-    print ("          |                   |                  |                     |")
-    print (" _________|________________.=\"\"_;=.______________|_____________________|_______")
-    print ("|                   |  ,-\"_,=\"\"     `\"=.|                  |")
-    print ("|___________________|__\"=._o`\"-._        `\"=.______________|___________________")
-    print ("          |                `\"=._o`\"=._      _`\"=._                     |")
-    print (" _________|_____________________:=._o \"=._.\"_.-=\"'\"=.__________________|_______")
-    print ("|                   |    __.--\" , ; `\"=._o.\" ,-\"\"\"-._ \".   |")
-    print ("|___________________|_._\"  ,. .` ` `` ,  `\"-._\"-._   \". '__|___________________")
-    print ("          |           |o`\"=._` , \"` `; .\". ,  \"-._\"-._; ;              |")
-    print (" _________|___________| ;`-.o`\"=._; .\" ` '`.\"\` . \"-._ /_______________|_______")
-    print ("|                   | |o;    `\"-.o`\"=._``  '` \" ,__.--o;   |")
-    print ("|___________________|_| ;     (#) `-.o `\"=.`_.--\"_o.-; ;___|___________________")
-    print ("____/______/______/___|o;._    \"      `\".o|o_.--\"    ;o;____/______/______/____")
-    print ("/______/______/______/_\"=._o--._        ; | ;        ; ;/______/______/______/_")
-    print ("____/______/______/______/__\"=._o--._   ;o|o;     _._;o;____/______/______/____")
-    print ("/______/______/______/______/____\"=._o._; | ;_.--\"o.--\"_/______/______/______/_")
-    print ("____/______/______/______/______/_____\"=.o|o_.--\"\"___/______/______/______/____")
-    print ("/______/______/______/______/______/______/______/______/______/______/_____/__")
-    print ("*******************************************************************************")
-    
+    pass
 ######################################################################
 #                          START THE GAME!!!                         #
 ######################################################################
 
-#setting starting game variables 
-game = None
-shots = 0
-dragonDead = False
-characterDead = False
 
 #Game Intro
 # print ("Welcome! Have a look around, and you never know what you might find." \
