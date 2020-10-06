@@ -191,8 +191,12 @@ class Game(Frame):
 
     #set the current room image
     def setRoomImage(self):
-        if(Game.currentRoom == None):
+        #sets skull image when character dies
+        if(characterDead == True):
             Game.img = PhotoImage(file = "Pictures\skull.gif")
+        #sets chest image when character wins
+        elif(game == "over"):
+            Game.img = PhotoImage(file = "Pictures\chest.gif")
         else:
             Game.img = PhotoImage(file = Game.currentRoom.image)
         Game.image.config(image = Game.img)
@@ -202,8 +206,8 @@ class Game(Frame):
     def setStatus(self, status):
         Game.text.config(state = NORMAL)
         Game.text.delete("1.0", END)
-        if(Game.currentRoom == None):
-            #If dead, let the player know
+        #If dead, let the player know
+        if(characterDead == True):
             Game.text.insert(END, "You are dead. The only thing you can do now"\
                              " is quit.\n")
         else:
@@ -229,7 +233,7 @@ class Game(Frame):
         response = ("I don't quite understand. Try verb noun. Valid verbs are" \
                     " go, look, take, open, place, and shoot.")
         #allows player to exit the game
-        if(action == "quit" or action == "exit" or action == "bye"\
+        if (action == "quit" or action == "exit" or action == "bye"\
            or action == "salut" or action == "sionara"\
            or action == "au revoir"):
             #closes the window and the program
@@ -238,15 +242,25 @@ class Game(Frame):
         if (action == "options"):
             response = ("Your verb options are go, look, take, open, place," \
                         "and shoot.")
-        if(Game.currentRoom == None):
+        #shoots the dragon
+        if (verb == "shoot"):
+            response = ("Shoot with what? Finger guns?")
+            if ("gun" in Game.inventory):
+                response = ("You put a hole in the wall. Why would you do that?")
+            if (Game.currentRoom == r5) and ("gun" in Game.inventory):
+                #deploys shoot function
+                response = shoot()
+        #We may not need this, since the room will never be None. Maybe we can change it to if characterDead == True.
+        if (Game.currentRoom == None):
             #clears player's input
             Game.player_input.delete(0, End)
             return
         #for two word inputs (verb, noun)
         words = action.split()
-        if(len(words) == 2):
+        if (len(words) == 2):
             verb = words[0]
             noun = words[1]
+            #to change rooms
             if (verb == "go"):
                 response = ("Invalid exit.")
                 if (noun in Game.currentRoom.exits):
@@ -255,21 +269,40 @@ class Game(Frame):
                     #starts the dragon attack
                     if Game.currentRoom == r5 and dragonDead == False:
                         response = ("A dragon is atatcking you! Shoot him!")
-                        self.dragon()     
-            elif(verb == "look"):
+                        self.dragon()
+            #to look at items
+            elif (verb == "look"):
                 response = ("I don't see that item.")
-                if(noun in Game.currentRoom.items):
+                if (noun in Game.currentRoom.items):
                     response = Game.currentRoom.items[noun]
-            elif(verb == "take"):
+            #to add grabbables
+            elif (verb == "take"):
                 response = ("I don't see that item")
                 for grabbable in Game.currentRoom.grabbables:
-                    if(noun == grabbable):
+                    if (noun == grabbable):
                         Game.inventory.append(grabbable)
                         Game.currentRoom.delGrabbable(grabbable)
                         response = ("Item grabbed")
-            
-                        #no need to check anymore
-                        break
+            #opens the chest behind the dragon after it is revealed
+            elif (verb == "open" or verb == "unlock"):
+                response = ("I can't open that.")
+                if (Game.currentRoom == r5) and (noun == "chest") and (dragonDead == True):
+                    if ("key" in Game.inventory):
+                        Game.inventory.append("infinite_wealth")
+                        #prints the chest
+                        # chest()
+                        response = ("So... much... GOLD!!! \n You're rich!!!")
+                        game = "over"
+            #reveals secret room once book is placed on bookshelf
+            elif (verb == "place"):
+                response = ("Place it where? The ground?!")
+                if (Game.currentRoom == r3) and (noun == "book") and \
+                    ("book" in Game.inventory):
+                    Game.inventory.remove("book")
+                    response = ("The bookshelf swings back. A secret room appears!")
+                    r3.addExit("west", r6)
+                if noun != "book":
+                    response = ("You should keep that for now.")
                     
         #Changes room picture, states new status, and edits room if necessary
         self.roomEdit()
@@ -314,7 +347,7 @@ class Game(Frame):
                                         "stout on the brew rig. Did you really " \
                                             "take his beer?")
         if Game.currentRoom == r5:
-            if dragonDead == True:
+            if dragonDead == True and "dragon!!!" in r5.items:
                 #changes the name of the dragon once killed
                 del r5.items["dragon!!!"]
                 r5.addItem("dead_dragon", "Yup, that's a dead dragon, alright")
@@ -408,6 +441,7 @@ def chest():##### This prints a chest when the game is won #####
 ######################################################################
 
 #setting starting game variables 
+game = None
 shots = 0
 dragonDead = False
 characterDead = False
@@ -442,98 +476,49 @@ window.mainloop()
 ##    if shots == 0 or dragonDead == True:
 ##        status = "{}\nYou are carrying: {}\n".format(currentRoom, inventory)
 ##        #ends the game once the gold is found
-    # if game == "over":
-    #     print ("You are carrying: {}".format(inventory))
-    #     break #Exits the game
-##        print ("=========================================================")
-##        print (status)
 ##    
-##    #gets player input on what to do
-##    action = input("What to do? ")
-##    #changes input to all lowercase for legibility
-##    action = action.lower()
-##    
-##    #executes the death function when killed by dragon
-##    if (characterDead == True):
-##        death()
-##        print ("You died")
-##        break
-##    
-##    #default response
-##    response = ("I don't understand. Try verb noun.")
-##    
-##    #allows player to exit the game
-
-##    
-
-##    
-##    #controlls all actions/ executes player input
-##    #splits input into a list
-##    words = action.split()
-##    if (len(words) == 2):
-##        verb = words[0]
-##        noun = words[1]
+#    #executes the death function when killed by dragon
+#    if (characterDead == True):
+#        death()
+#        print ("You died")
+#        break
+#
+##           
+# #opens the chest behind the dragon after it is revealed
+# elif (verb == "open" or verb == "unlock"):
+#     response = "I can't open that."
+#     if (currentRoom == r5) and (noun == "chest"):
+#         if ("key" in inventory):
+#             inventory.append("infinite_wealth")
+#             #prints the chest
+#             chest()
+#             response = "So... much... GOLD!!! \n You're rich!!!"
+#             game = "over"
 ##        
-# if (verb == "go"):
-#     response = "Invalid exit."
-#     if (noun in currentRoom.exits):
-#         currentRoom = currentRoom.exits[noun]
-#         response = "Room changed."
-#         #starts the dragon attack
-#         if currentRoom == r5 and dragonDead == False:
-#             response = "A dragon is atatcking you! Shoot him!"
-#             dragon()
-##                
-#        elif (verb == "look"):
-#            response = "I don't see that item."
-#            if (noun in currentRoom.items):
-#                response = currentRoom.items[noun]
-##                              
-##        elif (verb == "take" or verb == "grab"):
-##            response = "I don't see that item."
-##            for grabbable in currentRoom.grabbables:
-##                if (noun == grabbable):
-##                    inventory.append(grabbable)
-##                    currentRoom.delGrabbable(grabbable)
-##                    response = "Item grabbed."
-##                    #runs the function that changes the item descsriptions
-##                    roomEdit()
-##                
-##        #opens the chest behind the dragon after it is revealed
-##        elif (verb == "open" or verb == "unlock"):
-##            response = "I can't open that."
-##            if (currentRoom == r5) and (noun == "chest"):
-##                if ("key" in inventory):
-##                    inventory.append("infinite_wealth")
-##                    #prints the chest
-##                    chest()
-##                    response = "So... much... GOLD!!! \n You're rich!!!"
-##                    game = "over"
-##        
-##        #reveals secret room once book is placed on bookshelf
-##        elif (verb == "place"):
-##            response = "Place it where? The ground?!"
-##            if (currentRoom == r3) and (noun == "book") and ("book" in inventory):
-##                inventory.remove("book")
-##                response = "The bookshelf swings back. A secret room appears!"
-##                r3.addExit("west", r6)
-##            if noun != "book":
-##                response = "You should keep that for now."
+# #reveals secret room once book is placed on bookshelf
+# elif (verb == "place"):
+#     response = "Place it where? The ground?!"
+#     if (currentRoom == r3) and (noun == "book") and ("book" in inventory):
+#         inventory.remove("book")
+#         response = "The bookshelf swings back. A secret room appears!"
+#         r3.addExit("west", r6)
+#     if noun != "book":
+#         response = "You should keep that for now."
 ##    
 ##    #allows the player to shoot the dragon with input "shoot"
 ##    elif (len(words) == 1):
 ##        verb = words[0]
 ##        
-##        if (verb == "shoot"):
-##            response = "Shoot with what? Finger guns?"
-##            if "gun" in inventory:
-##                response = "You put a hole in the wall. Why would you do that?"
-##            if currentRoom == r5 and "gun" in inventory:
-##                #deploys shoot function
-##                response = shoot()
-##            #reveals the chest once the dragon is dead
-##            if dragonDead == True:
-##                roomEdit()
+# if (verb == "shoot"):
+#     response = "Shoot with what? Finger guns?"
+#     if "gun" in inventory:
+#         response = "You put a hole in the wall. Why would you do that?"
+#     if currentRoom == r5 and "gun" in inventory:
+#         #deploys shoot function
+#         response = shoot()
+#     #reveals the chest once the dragon is dead
+#     if dragonDead == True:
+#         roomEdit()
 ##                           
 ##    print ("\n{}".format(response))
 ##
