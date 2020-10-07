@@ -123,10 +123,10 @@ class Game(Frame):
         global r6
         global r7 #starting room
         #room names and images connected to the room
-        r1 = Room("the foyer", "Pictures/firstRoom.gif")
-        r2 = Room("the bedroom", "Pictures/secondRoom.gif")
+        r1 = Room("the foyer", "Pictures/secondRoom.gif")
+        r2 = Room("the bedroom", "Pictures/forthRoom.gif")
         r3 = Room("the study", "Pictures/thirdRoom.gif")
-        r4 = Room("the keg room", "Pictures/forthRoom.gif")
+        r4 = Room("the keg room", "Pictures/fifthRoom.gif")
         r5 = Room("the dungeon", "Pictures/firstRoom.gif")
         r6 = Room("the secret room", "Pictures/firstRoom.gif")
         r7 = Room("the prison", "Pictures/firstRoom.gif")
@@ -357,6 +357,8 @@ class Game(Frame):
         if Game.currentRoom == r3:
             if "book" in Game.inventory:
                 r3.items["desk"] = ("It's just a empty desk now.")
+            if "purple_box" in Game.inventory:
+                r3.items["statue"] = ("It's just a tall statue.")
         if Game.currentRoom == r4:
             if "6-pack" in Game.inventory:
                 r4.items["brew_rig"] = ("Gourd is brewing some sort of oatmeal " \
