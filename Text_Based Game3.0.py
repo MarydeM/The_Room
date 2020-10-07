@@ -313,6 +313,13 @@ class Game(Frame):
             #opens the chest behind the dragon after it is revealed
             elif (verb == "open" or verb == "unlock" or verb == "use"):
                 response = ("I can't open that.")
+                if (noun == "purple_box") or (noun == "purple_key"):
+                    if ("purple_box" in Game.inventory) and ("purple_key" in Game.inventory):
+                        Game.inventory.remove("purple_key")
+                        Game.inventory.remove("purple_box")
+                        response = ("The small pops open, revealing a small gemstone\n"
+                                    "that looks like a diamond.")
+                        Game.inventory.append("small_diamond")
                 if (Game.currentRoom == r7) and (self.characterCuffed == True) and ("small_key" in Game.inventory):
                     response = ("I unlocked the handcuffs, I can stand up now!")
                     Game.characterCuffed = False
@@ -349,7 +356,7 @@ class Game(Frame):
     #edits the description of items once a grabable is in player's inventory
     def roomEdit(self):
         if Game.currentRoom == r1:
-            if "key" in Game.inventory:
+            if "purple_key" in Game.inventory:
                 r1.items["table"] = ("It is made of oak. Nothing is on it")
         if Game.currentRoom == r2:
             if "gun" in Game.inventory:
@@ -358,7 +365,7 @@ class Game(Frame):
             if "book" in Game.inventory:
                 r3.items["desk"] = ("It's just a empty desk now.")
             if "purple_box" in Game.inventory:
-                r3.items["statue"] = ("It's just a tall statue.")
+                r3.items["statue"] = ("It's just a tall statue in the middle of the \nroom.")
         if Game.currentRoom == r4:
             if "6-pack" in Game.inventory:
                 r4.items["brew_rig"] = ("Gourd is brewing some sort of oatmeal " \
