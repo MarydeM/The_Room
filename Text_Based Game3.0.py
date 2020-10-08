@@ -87,12 +87,17 @@ class Room():
     def __str__(self):
         s = "You are in {}.\n".format(self.name)
         s += "You see: "
-        for item in self.items.keys():
-            s += item + " "
+        #adds a ", " after each entry, except when the last entry
+        for index, item in enumerate(self.items.keys()):
+            s += item
+            if index < len(self.items.keys()) - 1:
+                s += ", "
         s += "\n"
         s += "Exits: "
-        for exit in self.exits.keys():
-            s += exit + " "
+        for index, exit in enumerate(self.exits.keys()):
+            s += exit
+            if index < len(self.exits.keys()) - 1:
+                s += ", "
         return s
     
     #Exit Class
@@ -107,9 +112,9 @@ class Game(Frame):
     #setting starting game variables 
     game = None
     shots = 0
-    dragonDead = False
-    characterDead = False
+    dragonDead, characterDead = False, False
     characterCuffed = True
+    gameStarted = False
    
     #creates the rooms
     def createRooms(self):
@@ -129,7 +134,7 @@ class Game(Frame):
         r4 = Room("the keg room", "Pictures/fifthRoom.gif")
         r5 = Room("the dungeon", "Pictures/firstRoom.gif")
         r6 = Room("the secret room", "Pictures/firstRoom.gif")
-        r7 = Room("the prison", "Pictures/firstRoom.gif")
+        r7 = Room("a prison cell", "Pictures/firstRoom.gif")
         #room 1
         r1.addExit("east", r2)
         r1.addExit("south", r3)
@@ -143,7 +148,7 @@ class Game(Frame):
         r2.addGrabbable("gun")
         r2.addItem("closet", "There's just a dirty, old coat with a gun in " \
                    "the pocket") 
-        r2.addItem("rug", "It is nice and Indian. It also needs to be vacuumed.")
+        r2.addItem("rug", "It is nice and Indian. It also needs to be \nvacuumed.")
         r2.addItem("fireplace", "It is full of ashes, there is a empty slot in the\n"
                    "shape of a diamond above the opening.")
         #room 3
@@ -171,9 +176,10 @@ class Game(Frame):
         #room 7
         r7.addExit("south", r1)
         r7.addGrabbable("small_key")
-        r7.addItem("upturned_bucket", "There is an upside down bucket here,\n"
-                   "and underneath it is a small_key.")
-        r7.addItem("rags", "It's the closest thing to a bed I have in this cell")
+        r7.addItem("upturned_bucket", "There is an upside down bucket here, " +\
+                   "underneath\nit is a small_key.")
+        r7.addItem("slot", "There's a slot in the wall in the shape of a \nsquare.")
+        r7.addItem("rags", "It's the closest thing to a bed in this cell.")
         #initialize the player's inventory 
         Game.currentRoom = r7
         Game.inventory = [] 
@@ -228,12 +234,21 @@ class Game(Frame):
     def setStatus(self, status):
         Game.text.config(state = NORMAL)
         Game.text.delete("1.0", END)
+        #Sets response at begining of the game to let player know that they are handcuffed
+        if(self.gameStarted == False):
+            Game.text.insert(END, str(Game.currentRoom) +\
+                             "\nYou are carrying: " + str(Game.inventory) +\
+                             "\n\n" + status +\
+                             "You wake up in a dark cell handcuffed to the \n" +\
+                             "wall with no memory of how you got here.\n\n" +\
+                             "Try verb noun to interact with the enviroment.")
+            self.gameStarted = True
+            return
         #If dead, let the player know
         if(self.characterDead == True):
             Game.text.insert(END, "You are dead. The only thing you can do now\n"\
                              "is quit.")
             self.setRoomImage()
-            
         else:
             Game.text.insert(END, str(Game.currentRoom) +\
                              "\nYou are carrying: " + str(Game.inventory) +\
@@ -254,7 +269,7 @@ class Game(Frame):
         #sets input to all lowercase
         action = action.lower()
         #set a default response
-        response = ("I don't quite understand. Try verb noun. Valid verbs are" \
+        response = ("I don't quite understand. Try verb noun. Valid \nverbs are" \
                     " go, look, take, open, place, and shoot.")
         #allows player to exit the game
         if (action == "quit" or action == "exit" or action == "bye"\
@@ -317,13 +332,20 @@ class Game(Frame):
                     if ("purple_box" in Game.inventory) and ("purple_key" in Game.inventory):
                         Game.inventory.remove("purple_key")
                         Game.inventory.remove("purple_box")
-                        response = ("The small pops open, revealing a small gemstone\n"
-                                    "that looks like a diamond.")
-                        Game.inventory.append("small_diamond")
-                if (Game.currentRoom == r7) and (self.characterCuffed == True) and ("small_key" in Game.inventory):
-                    response = ("I unlocked the handcuffs, I can stand up now!")
-                    Game.characterCuffed = False
-                    Game.inventory.remove("small_key")
+                        response = ("The small box pops open, revealing a red square \n"
+                                    "gemstone that fits in the palm of your hand.")
+                        Game.inventory.append("red_gem")
+                if (Game.currentRoom == r7) and (self.characterCuffed == True) \
+                   and ("small_key" in Game.inventory):
+                    if (noun == "handcuffs") or (noun == "small_key"):
+                        response = ("I unlocked the handcuffs, I can stand up now!")
+                        Game.characterCuffed = False
+                        Game.inventory.remove("small_key")
+                if (Game.currentRoom == r3) and ("secret_door" in r3.items):
+                    if (noun == "secret_door") or (noun == "red_key"):
+                        r3.addExit("west", r6)
+                        Game.inventory.remove("red_key")
+                        r3.items["secret_door"] = ("The door to the hidden room, it's unlocked now.")
                 if (Game.currentRoom == r5) and (noun == "chest") and (self.dragonDead == True):
                     if ("key" in Game.inventory):
                         #adds wealth to the player's inventory
@@ -333,14 +355,18 @@ class Game(Frame):
                         self.game = "over"
             #reveals secret room once book is placed on bookshelf
             elif (verb == "place"):
-                response = ("Place it where? The ground?!")
+                response = ("You should keep that for now.")
+                if (Game.currentRoom == r7) and ("red_gem" in Game.inventory) and (noun == "red_gem"):
+                    Game.inventory.remove("red_gem")
+                    response = ("You slide the gem into the slot, which reveals a hidden compartment "+
+                                "with a red_key inside.")
+                    Game.inventory.append("red_key")
                 if (Game.currentRoom == r3) and (noun == "book") and \
                     ("book" in Game.inventory):
                     Game.inventory.remove("book")
-                    response = ("The bookshelf swings back. A secret room appears!")
-                    r3.addExit("west", r6)
-                if noun != "book":
-                    response = ("You should keep that for now.")
+                    response = ("The bookshelf swings back. A secret door appears!")
+                    r3.addItem("secret_door", "The locked door was hidden behind a bookcase. " +\
+                               "The handle to the door is painted red.")
         #Changes room picture, states new status, and edits room if necessary
         self.roomEdit()
         self.setStatus(response)
@@ -380,7 +406,8 @@ class Game(Frame):
                 r5.addItem("chest", "It is very large and appears to be locked")
         if Game.currentRoom == r7:
             if "small_key" in Game.inventory:
-                r7.items["upturned_bucket"] = ("It's just an upside down bucket.")
+                r7.items["upturned_bucket"] = ("It's just an upside down bucket, it's not\n"+\
+                                               "that interesting.")
 
     #enables dragon shooting abilities 
     def shoot(self):
