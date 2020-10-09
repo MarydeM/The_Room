@@ -283,8 +283,8 @@ class Game(Frame):
             window.destroy()
         #displays the options at the player's request
         if (action == "options"):
-            response = ("Your verb options are go, look, take, open, place," \
-                        "and shoot.")
+            response = ("Your verb options are go, look, take, unlock, place,\n" \
+                        "open, and shoot.")
         #shoots the dragon
         if (action == "shoot"):
             response = ("Shoot with what? Finger guns?")
