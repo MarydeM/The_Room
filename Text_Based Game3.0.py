@@ -92,12 +92,14 @@ class Room():
             s += item
             if index < len(self.items.keys()) - 1:
                 s += ", "
+        s += "."
         s += "\n"
         s += "Exits: "
         for index, exit in enumerate(self.exits.keys()):
             s += exit
             if index < len(self.exits.keys()) - 1:
                 s += ", "
+        s += "."
         return s
     
     #Exit Class
@@ -133,7 +135,7 @@ class Game(Frame):
         r3 = Room("the study", "Pictures/thirdRoom.gif")
         r4 = Room("the keg room", "Pictures/fifthRoom.gif")
         r5 = Room("the dungeon", "Pictures/firstRoom.gif")
-        r6 = Room("the secret room", "Pictures/firstRoom.gif")
+        r6 = Room("a hidden office", "Pictures/secretRoom.gif")
         r7 = Room("a prison cell", "Pictures/firstRoom.gif")
         #room 1
         r1.addExit("east", r2)
@@ -145,9 +147,9 @@ class Game(Frame):
         #room 2
         r2.addExit("west", r1)
         r2.addExit("south", r4)
-        r2.addGrabbable("gun")
-        r2.addItem("closet", "There's just a dirty, old coat with a gun in " \
-                   "the pocket") 
+        r2.addItem("closet", "There's a durty, old coat in here, theres a\npaper_slip " +\
+                   "in the pocket. It has a 4-digit\ncode on it.")
+        r2.addGrabbable("paper_slip")
         r2.addItem("rug", "It is nice and Indian. It also needs to be \nvacuumed.")
         r2.addItem("fireplace", "It is full of ashes, there is a empty slot in the\n"
                    "shape of a diamond above the opening.")
@@ -155,7 +157,7 @@ class Game(Frame):
         r3.addExit("north", r1)
         r3.addExit("east", r4)
         r3.addGrabbable("book")
-        r3.addItem("bookshelves", "They are empty. Go figure.")
+        r3.addItem("bookshelves", "A collection of book, looks like one is missing\nthough.")
         r3.addItem("statue", "There is a large statue in the middle of the \nroom."
                    " It looks like it's holding a purple_box.")
         r3.addItem("desk", "There is a book resting on the desk.")
@@ -164,15 +166,17 @@ class Game(Frame):
         r4.addExit("north", r2)
         r4.addExit("west", r3)
         r4.addExit("south", r5) 
-        r4.addGrabbable("6-pack")
-        r4.addItem("brew_rig", "Gourd is brewing some sort of oatmeal stout on " \
-                   "the brew rig. A 6-pack is resting beside it.")
+        r4.addGrabbable("wine")
+        r4.addItem("brew_rig", "Gourd is brewing some sort of oatmeal stout on\n" \
+                   "the brew rig. Wine is resting beside it in a bottle.")
         #room 5
         r5.addExit("north", r4)
         r5.addItem("dragon!!!", "Does it matter what it looks like?! Kill it!")
         #room 6
         r6.addExit("east", r3)
         r6.addItem("safe", "It has a dial on it. I wonder what the code could be.")
+        r6.addGrabbable("gun")
+        r6.addItem("gun", "Someone left their loaded pistol on the desk\nhere.")
         #room 7
         r7.addExit("south", r1)
         r7.addGrabbable("small_key")
@@ -328,11 +332,17 @@ class Game(Frame):
             #opens the chest behind the dragon after it is revealed
             elif (verb == "open" or verb == "unlock" or verb == "use"):
                 response = ("I can't open that.")
+                if (Game.currentRoom == r6):
+                    if (noun == "safe") or (noun == "paper_slip"):
+                        response = ("I swing the safe open after inputting the code.\n" +\
+                                    "There's a small diamond in here.")
+                        Game.inventory.remove("paper_slip")
+                        Game.inventory.append("diamond")
                 if (noun == "purple_box") or (noun == "purple_key"):
                     if ("purple_box" in Game.inventory) and ("purple_key" in Game.inventory):
                         Game.inventory.remove("purple_key")
                         Game.inventory.remove("purple_box")
-                        response = ("The small box pops open, revealing a red square \n"
+                        response = ("The small box pops open, revealing a square red\n"
                                     "gemstone that fits in the palm of your hand.")
                         Game.inventory.append("red_gem")
                 if (Game.currentRoom == r7) and (self.characterCuffed == True) \
@@ -345,17 +355,24 @@ class Game(Frame):
                     if (noun == "secret_door") or (noun == "red_key"):
                         r3.addExit("west", r6)
                         Game.inventory.remove("red_key")
+                        response = ("I unlocked the door to the hidden room!")
                         r3.items["secret_door"] = ("The door to the hidden room, it's unlocked now.")
-                if (Game.currentRoom == r5) and (noun == "chest") and (self.dragonDead == True):
-                    if ("key" in Game.inventory):
+                if (Game.currentRoom == r5) and (noun == "chest") and (self.dragonDead == True): 
+                    if ("golden_key" in Game.inventory):
                         #adds wealth to the player's inventory
                         Game.inventory.append("infinite_wealth")
-                        response = ("So... much... GOLD!!! \n You're rich!!!")
+                        response = ("So... much... GOLD!!! \n I'm rich!!!")
                         #ends the game
                         self.game = "over"
             #reveals secret room once book is placed on bookshelf
             elif (verb == "place"):
                 response = ("You should keep that for now.")
+                if (Game.currentRoom == r2) and ("diamond" in Game.inventory):
+                    Game.inventory.remove("diamond")
+                    response = ("Placing the diamond into the slot triggers\n"
+                                "a sound in the walls. There's a key on \nthe"
+                                "mantel now.")
+                    Game.inventory.append("golden_key")
                 if (Game.currentRoom == r7) and ("red_gem" in Game.inventory) and (noun == "red_gem"):
                     Game.inventory.remove("red_gem")
                     response = ("You slide the gem into the slot, which reveals a hidden compartment "+
@@ -364,8 +381,9 @@ class Game(Frame):
                 if (Game.currentRoom == r3) and (noun == "book") and \
                     ("book" in Game.inventory):
                     Game.inventory.remove("book")
-                    response = ("The bookshelf swings back. A secret door appears!")
-                    r3.addItem("secret_door", "The locked door was hidden behind a bookcase. " +\
+                    r3.items["bookshelves"] = ("All books are here and accounted for.")
+                    response = ("The bookshelf swings back. There's a door here!")
+                    r3.addItem("secret_door", "The locked door was hidden behind the shelves.\n" +\
                                "The handle to the door is painted red.")
         #Changes room picture, states new status, and edits room if necessary
         self.roomEdit()
@@ -385,18 +403,27 @@ class Game(Frame):
             if "purple_key" in Game.inventory:
                 r1.items["table"] = ("It is made of oak. Nothing is on it")
         if Game.currentRoom == r2:
+            if "golden_key" in Game.inventory:
+                r2.items["fireplace"] = ("The fireplace now has a diamond\nabove the opening. "
+                                         "Still full of ash though.")
+            if "paper_slip" in Game.inventory:
+                r2.items["closet"] = ("Just a dusty coat in here.")
+        if Game.currentRoom == r6:
+            if "diamond" in Game.inventory:
+                r6.items["safe"] = ("The safe is empty, I already took everything")
             if "gun" in Game.inventory:
-                r2.items["closet"] = ("There's just a dirty, old coat")
+                if "gun" in r6.items:
+                    del r6.items["gun"]
         if Game.currentRoom == r3:
             if "book" in Game.inventory:
                 r3.items["desk"] = ("It's just a empty desk now.")
             if "purple_box" in Game.inventory:
                 r3.items["statue"] = ("It's just a tall statue in the middle of the \nroom.")
         if Game.currentRoom == r4:
-            if "6-pack" in Game.inventory:
+            if "wine" in Game.inventory:
                 r4.items["brew_rig"] = ("Gourd is brewing some sort of oatmeal " \
-                                        "stout on the brew rig. Did you really " \
-                                            "take his beer?")
+                                        "stout on\nthe brew rig. Did you really just " \
+                                            "take his\nwine?")
         if Game.currentRoom == r5:
             if self.dragonDead == True and "dragon!!!" in r5.items:
                 #changes the name of the dragon once killed
