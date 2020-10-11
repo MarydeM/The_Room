@@ -171,7 +171,7 @@ class Game(Frame):
                    "the brew rig. Wine is resting beside it in a bottle.")
         #room 5
         r5.addExit("north", r4)
-        r5.addItem("dragon!", "Does it matter what it looks like?! Kill it!")
+        r5.addItem("dragon", "Does it matter what it looks like?! Kill it!")
         #room 6
         r6.addExit("east", r3)
         r6.addItem("safe", "It has a dial on it. I wonder what the code could be.")
@@ -406,11 +406,6 @@ class Game(Frame):
         #Starts a timer for the player to kill the dragon
         global start
         start = time.time()
-        end = time.time()
-        elapsed = end - start
-        if elapsed > 10:
-            # Executes the Death function
-            self.characterDead = True
     
     #edits the description of items once a grabable is in player's inventory
     def roomEdit(self):
@@ -440,9 +435,9 @@ class Game(Frame):
                                         "stout on\nthe brew rig. Did you really just " \
                                             "take his\nwine?")
         if Game.currentRoom == r5:
-            if self.dragonDead == True and "dragon!" in r5.items:
+            if self.dragonDead == True and "dragon" in r5.items:
                 #changes the name of the dragon once killed
-                del r5.items["dragon!"]
+                del r5.items["dragon"]
                 r5.addItem("dead_dragon", "Yup, that's a dead dragon, alright")
                 #reveals the previously hidden chest
                 r5.addItem("chest", "It is very large and appears to be locked")
