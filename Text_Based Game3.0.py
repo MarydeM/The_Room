@@ -1,7 +1,7 @@
 ######################################################################
 # Name:Mary deMarigny & Chloe Boudreaux
 # Date:09/29/2020
-# Description: Text Based Game_Updated: Python 3.8
+# Description: Text Based Game with a GUI attached: Python 3.8
 ######################################################################
 
 #I added to my game the following features:
@@ -180,11 +180,12 @@ class Game(Frame):
         #room 7
         r7.addExit("south", r1)
         r7.addGrabbable("small_key")
+        r7.addItem("handcuffs", "I'm handcuffed to the wall, I can't move.")
         r7.addItem("upturned_bucket", "There is an upside down bucket here, " +\
                    "underneath\nit is a small_key.")
         r7.addItem("slot", "There's a slot in the wall in the shape of a \nsquare.")
         r7.addItem("rags", "It's the closest thing to a bed in this cell.")
-        #initialize the player's inventory 
+        #initialize the player's inventory after setting the starting room
         Game.currentRoom = r7
         Game.inventory = [] 
 
@@ -329,7 +330,7 @@ class Game(Frame):
                         Game.inventory.append(grabbable)
                         Game.currentRoom.delGrabbable(grabbable)
                         response = ("Item grabbed")
-            #opens the chest behind the dragon after it is revealed
+            #opens secret door, box, and ending chest
             elif (verb == "open" or verb == "unlock" or verb == "use"):
                 response = ("I can't open that.")
                 if (Game.currentRoom == r6):
@@ -349,6 +350,7 @@ class Game(Frame):
                    and ("small_key" in Game.inventory):
                     if (noun == "handcuffs") or (noun == "small_key"):
                         response = ("I unlocked the handcuffs, I can stand up now!")
+                        del r7.items["handcuffs"]
                         Game.characterCuffed = False
                         Game.inventory.remove("small_key")
                 if (Game.currentRoom == r3) and ("secret_door" in r3.items):
@@ -364,7 +366,7 @@ class Game(Frame):
                         response = ("So... much... GOLD!!! \n I'm rich!!!")
                         #ends the game
                         self.game = "over"
-            #reveals secret room once book is placed on bookshelf
+            #place gems and book
             elif (verb == "place"):
                 response = ("You should keep that for now.")
                 if (Game.currentRoom == r2) and ("diamond" in Game.inventory):
@@ -466,8 +468,6 @@ class Game(Frame):
         elif self.shots > 6:
             return "He's already dead, you psychopath"           
 
-def death():
-    pass
 ######################################################################
 #                          START THE GAME!!!                         #
 ######################################################################
