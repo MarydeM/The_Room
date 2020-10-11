@@ -1,6 +1,6 @@
 # The_Room
 
-Line 270 doesn't seem to prevent player input, and the new status is not printed aferwards.
+Line 270 input is not prevented but no actions will be taken
 
 The player doesn't die after time is up in shoot() function
 
@@ -16,3 +16,5 @@ I added a puzzle that is; take the purple key from the foyer and box from the st
 added a function to examine objects in the player's inventory might be a good addition to the actions -line 270
 
 added more items to the game in roomSetup
+
+we really need the death function to work

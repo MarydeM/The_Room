@@ -171,7 +171,7 @@ class Game(Frame):
                    "the brew rig. Wine is resting beside it in a bottle.")
         #room 5
         r5.addExit("north", r4)
-        r5.addItem("dragon!!!", "Does it matter what it looks like?! Kill it!")
+        r5.addItem("dragon!", "Does it matter what it looks like?! Kill it!")
         #room 6
         r6.addExit("east", r3)
         r6.addItem("safe", "It has a dial on it. I wonder what the code could be.")
@@ -225,7 +225,7 @@ class Game(Frame):
     #set the current room image
     def setRoomImage(self):
         #sets skull image when character dies
-        if(self.characterDead == True):
+        if (self.characterDead == True) or (Game.currentRoom == None):
             Game.img = PhotoImage(file = "Pictures\skull.gif")
         #sets chest image when character wins
         elif(self.game == "over"):
@@ -237,10 +237,11 @@ class Game(Frame):
 
     #sets the status displayed on the right of the GUI
     def setStatus(self, status):
-        Game.text.config(state = NORMAL)
-        Game.text.delete("1.0", END)
+        if (self.characterDead != True) or (Game.currentRoom != None) or (self.game != "over"):
+            Game.text.config(state = NORMAL)
+            Game.text.delete("1.0", END)
         #Sets response at begining of the game to let player know that they are handcuffed
-        if(self.gameStarted == False):
+        if(self.gameStarted == False) and (Game.currentRoom != None):
             Game.text.insert(END, str(Game.currentRoom) +\
                              "\nYou are carrying: " + str(Game.inventory) +\
                              "\n\n" + status +\
@@ -250,10 +251,16 @@ class Game(Frame):
             self.gameStarted = True
             return
         #If dead, let the player know
-        if(self.characterDead == True):
+        if(self.game == "over"):
+            Game.text.insert(END, "So...\nMuch...\nGold!!!\n\nYou won!"\
+                             "The only thing you can do now\n"\
+                             "is quit.")
+            Game.text.config(state = DISABLED)
+        elif(self.characterDead == True) or (Game.currentRoom == None):
             Game.text.insert(END, "You are dead. The only thing you can do now\n"\
                              "is quit.")
             self.setRoomImage()
+            Game.text.config(state = DISABLED)
         else:
             Game.text.insert(END, str(Game.currentRoom) +\
                              "\nYou are carrying: " + str(Game.inventory) +\
@@ -314,8 +321,12 @@ class Game(Frame):
                         Game.currentRoom = Game.currentRoom.exits[noun]
                         response = ("Room changed")
                         #starts the dragon attack
-                        if Game.currentRoom == r5 and self.dragonDead == False:
+                        if Game.currentRoom == r5 and self.dragonDead == False\
+                           and ("gun" in Game.inventory):
                             response = ("A dragon is atatcking you! Shoot him!")
+                            self.dragon()
+                        elif Game.currentRoom == r5 and self.dragonDead == False:
+                            response = ("A dragon is atatcking you! Run!!")
                             self.dragon()
             #to look at items
             elif (verb == "look"):
@@ -361,9 +372,6 @@ class Game(Frame):
                         r3.items["secret_door"] = ("The door to the hidden room, it's unlocked now.")
                 if (Game.currentRoom == r5) and (noun == "chest") and (self.dragonDead == True): 
                     if ("golden_key" in Game.inventory):
-                        #adds wealth to the player's inventory
-                        Game.inventory.append("infinite_wealth")
-                        response = ("So... much... GOLD!!! \n I'm rich!!!")
                         #ends the game
                         self.game = "over"
             #place gems and book
@@ -372,7 +380,7 @@ class Game(Frame):
                 if (Game.currentRoom == r2) and ("diamond" in Game.inventory):
                     Game.inventory.remove("diamond")
                     response = ("Placing the diamond into the slot triggers\n"
-                                "a sound in the walls. There's a key on \nthe"
+                                "a sound in the walls. There's a key on \nthe "
                                 "mantel now.")
                     Game.inventory.append("golden_key")
                 if (Game.currentRoom == r7) and ("red_gem" in Game.inventory) and (noun == "red_gem"):
@@ -398,6 +406,11 @@ class Game(Frame):
         #Starts a timer for the player to kill the dragon
         global start
         start = time.time()
+        end = time.time()
+        elapsed = end - start
+        if elapsed > 10:
+            # Executes the Death function
+            self.characterDead = True
     
     #edits the description of items once a grabable is in player's inventory
     def roomEdit(self):
@@ -427,22 +440,21 @@ class Game(Frame):
                                         "stout on\nthe brew rig. Did you really just " \
                                             "take his\nwine?")
         if Game.currentRoom == r5:
-            if self.dragonDead == True and "dragon!!!" in r5.items:
+            if self.dragonDead == True and "dragon!" in r5.items:
                 #changes the name of the dragon once killed
-                del r5.items["dragon!!!"]
+                del r5.items["dragon!"]
                 r5.addItem("dead_dragon", "Yup, that's a dead dragon, alright")
                 #reveals the previously hidden chest
                 r5.addItem("chest", "It is very large and appears to be locked")
         if Game.currentRoom == r7:
+            if "red_key" in Game.inventory:
+                r7.items["slot"] = ("The slot in the wall has the gem I placed in\nit still.")
             if "small_key" in Game.inventory:
                 r7.items["upturned_bucket"] = ("It's just an upside down bucket, it's not\n"+\
                                                "that interesting.")
 
     #enables dragon shooting abilities 
     def shoot(self):
-        global start 
-        self.dragonDead
-        self.characterDead
         self.shots += 1
         #players have ten seconds to kill the dragon
         end = time.time()
