@@ -5,13 +5,15 @@
 ######################################################################
 
 #I added to my game the following features:
-    #item descriptions change when grabbables are picked up
-    #there is an extra room, items, and grababble
-    #the extra room contains a dragon and a hidden item that is not revealed until the dragon is killed
-    #once the dragon is found, a countdown starts before the player is killed, and is only stopped by killing the dragon
-    #there is a shooting mechanism that only works once the gun is obtained
-    #there is a chest that can only be open once the key is obtained
-    #there is a secret room that is revealed when the book is placed on the bookshelf
+    #item descriptions change when grabbables are picked up.
+    #there are 3 extra room, more items, and more grababble.
+    #one extra room contains a dragon and a hidden item that is not revealed until the dragon is killed.
+    #there is now a starting room that you need to escape from.
+    #once the dragon is found, a countdown starts before the player is killed, \
+    #and is only stopped by killing the dragon.
+    #there is a shooting mechanism that only works once the gun is obtained.
+    #there is a chest that can only be open once the key is obtained.
+    #there is a secret room that is revealed when the book is placed on the bookshelf.
     
 #Used for the timer on the Dragon
 from tkinter import *
@@ -370,24 +372,29 @@ class Game(Frame):
                         Game.inventory.remove("red_key")
                         response = ("I unlocked the door to the hidden room!")
                         r3.items["secret_door"] = ("The door to the hidden room, it's unlocked now.")
+                #ends the game if chest is unlocked
                 if (Game.currentRoom == r5) and (noun == "chest") and (self.dragonDead == True): 
                     if ("golden_key" in Game.inventory):
                         #ends the game
                         self.game = "over"
             #place gems and book
             elif (verb == "place"):
+                #basic response for if it is an invalid command
                 response = ("You should keep that for now.")
+                #gives player key to end game
                 if (Game.currentRoom == r2) and ("diamond" in Game.inventory):
                     Game.inventory.remove("diamond")
                     response = ("Placing the diamond into the slot triggers\n"
                                 "a sound in the walls. There's a key on \nthe "
                                 "mantel now.")
                     Game.inventory.append("golden_key")
+                #Gives player the key to secret room
                 if (Game.currentRoom == r7) and ("red_gem" in Game.inventory) and (noun == "red_gem"):
                     Game.inventory.remove("red_gem")
                     response = ("You slide the gem into the slot, which reveals a hidden compartment "+
                                 "with a red_key inside.")
                     Game.inventory.append("red_key")
+                #Reveals secret door in the office
                 if (Game.currentRoom == r3) and (noun == "book") and \
                     ("book" in Game.inventory):
                     Game.inventory.remove("book")
@@ -410,25 +417,33 @@ class Game(Frame):
     #edits the description of items once a grabable is in player's inventory
     def roomEdit(self):
         if Game.currentRoom == r1:
+            #take the purple key in the foyer
             if "purple_key" in Game.inventory:
                 r1.items["table"] = ("It is made of oak. Nothing is on it")
         if Game.currentRoom == r2:
+            #grab the golden key
             if "golden_key" in Game.inventory:
                 r2.items["fireplace"] = ("The fireplace now has a diamond\nabove the opening. "
                                          "Still full of ash though.")
+            #take the slip in the closet
             if "paper_slip" in Game.inventory:
                 r2.items["closet"] = ("Just a dusty coat in here.")
         if Game.currentRoom == r6:
+            #open the safe
             if "diamond" in Game.inventory:
                 r6.items["safe"] = ("The safe is empty, I already took everything")
+            #pick up the gun in the office
             if "gun" in Game.inventory:
                 if "gun" in r6.items:
                     del r6.items["gun"]
         if Game.currentRoom == r3:
+            #pick up book from desk
             if "book" in Game.inventory:
                 r3.items["desk"] = ("It's just a empty desk now.")
+            #pick up the box the statue is holding
             if "purple_box" in Game.inventory:
                 r3.items["statue"] = ("It's just a tall statue in the middle of the \nroom.")
+        #pick up wine in keg room
         if Game.currentRoom == r4:
             if "wine" in Game.inventory:
                 r4.items["brew_rig"] = ("Gourd is brewing some sort of oatmeal " \
@@ -440,7 +455,7 @@ class Game(Frame):
                 del r5.items["dragon"]
                 r5.addItem("dead_dragon", "Yup, that's a dead dragon, alright")
                 #reveals the previously hidden chest
-                r5.addItem("chest", "It is very large and appears to be locked")
+                r5.addItem("chest", "It is a very large wooden chest and appears\nto be locked.")
         if Game.currentRoom == r7:
             if "red_key" in Game.inventory:
                 r7.items["slot"] = ("The slot in the wall has the gem I placed in\nit still.")
