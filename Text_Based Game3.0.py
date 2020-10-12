@@ -267,10 +267,11 @@ class Game(Frame):
         
         #If the game is over, let the player know
         if(self.game == "over"):
-            Game.text.insert(END, "So...\nMuch...\nGold!!! \n\nYou won!"\
-                             "The only thing you can do now \n"\
+            Game.text.insert(END, "So...\nMuch...\nGold!!! \n\nYou won! "\
+                             "The only thing you can do now "\
                              "is quit.")
             Game.text.config(state = DISABLED)
+            
         #If character dies
         elif(self.characterDead == True) or (Game.currentRoom == None):
             Game.text.insert(END, "The dragon killed you!\n\nThe only thing you can do" \
