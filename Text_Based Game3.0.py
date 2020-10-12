@@ -275,8 +275,8 @@ class Game(Frame):
         elif(self.characterDead == True) or (Game.currentRoom == None):
             Game.text.insert(END, "You are dead. The only thing you can do" \
                              " now \n is quit.")
-            self.setRoomImage()
             Game.text.config(state = DISABLED)
+            
         else:
             Game.text.insert(END, str(Game.currentRoom) +\
                              "\nYou are carrying: " + str(Game.inventory) +\
@@ -325,7 +325,6 @@ class Game(Frame):
         if (self.characterDead == True):
             #clears player's input
             Game.player_input.delete(0, END)
-            return
         
         #for two word inputs (verb, noun)
         words = action.split()
@@ -350,7 +349,6 @@ class Game(Frame):
                             self.dragon()
                         elif Game.currentRoom == r5 and self.dragonDead == False:
                             response = ("A dragon is atatcking you! Run!!")
-                            self.dragon()
                             
             #to look at items
             elif (verb == "look"):
